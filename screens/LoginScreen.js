@@ -1,114 +1,188 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, TouchableOpacity } from 'react-native';
-import { Ionicons, FontAwesome, AntDesign } from '@expo/vector-icons';
+//I'm changing the login screen as well, it's lacking some features and i want to implement some security features ~rycoe
+
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // For storing JWT (it's a security feature)
+import { login } from "../api"; // Import the login function from the backend API module
 
 export default function LoginScreen({ navigation, onLogin }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  // State to hold form data for login
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  // State for toggling password visibility
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Generic function to update form fields as user types
+  const handleChange = (field, value) => {
+    setForm({ ...form, [field]: value });
+  };
+
+  // Function to handle the login process when the "Login" button is pressed
+  const handleLogin = async () => {
+    //Client-side validation
+    if (!form.email || !form.password) {
+      Alert.alert("Validation Error", "Please enter both email and password.");
+      return;
+    }
+
+    try {
+      // Call the login function from API module with the form data
+      // Assume 'login' function in '../api.js' returns { status: 'success', token: 'jwt', user: 'userEmail' } on success
+      // Or { status: 'error', message: '...' } on failure
+      const result = await login(form);
+
+      // Show an alert with the result of the login attempt
+      if (result.status === "success") {
+        const { token, user } = result.data;
+        // Store the JWT token and user email in AsyncStorage for persistent login
+        // (so that when you close the app and reopen it, you woulnt have to login again)
+        await AsyncStorage.setItem("jwtToken", token);
+        await AsyncStorage.setItem("userEmail", user.email);
+
+        Alert.alert("Success", result.message || "Login Successful!");
+        onLogin();
+      } else {
+        // Show error message if login fails
+        Alert.alert(
+          "Error",
+          result.message || "Login failed. Please check your credentials."
+        );
+      }
+    } catch (error) {
+      console.error("Login API call failed:", error);
+      Alert.alert(
+        "Error",
+        "Network error or unable to connect. Please try again later."
+      );
+    }
+  };
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: '#fff' }}>
-      <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#7f00ff', marginBottom: 8, letterSpacing: 2 }}>
-        WANDANA
-      </Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-        <Ionicons name="lock-closed" size={16} color="green" style={{ marginRight: 5 }} />
-        <Text style={{ fontSize: 12, color: 'green' }}>Your data is protected</Text>
-      </View>
-      <TouchableOpacity
-        style={{
-          backgroundColor: '#7f00ff',
-          paddingVertical: 10,
-          paddingHorizontal: 24,
-          borderRadius: 20,
-          marginBottom: 24,
-        }}
-        activeOpacity={0.8}
-        // You can add an onPress handler here if needed
-      >
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
-          Get 20% off your first order
-        </Text>
-      </TouchableOpacity>
-
-      <Text style={{ alignSelf: 'flex-start', marginLeft: 10 }}>Email or Phone Number</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Welcome Back!</Text>
+      <Text style={styles.subtitle}>Login to your Wandana account</Text>
+      <Text style={styles.inputLabel}>Email</Text>
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: '#ccc',
-          width: '100%',
-          maxWidth: 300,
-          marginBottom: 16,
-          padding: 10,
-          borderRadius: 8,
-        }}
-        value={username}
-        onChangeText={setUsername}
+        style={styles.input}
+        value={form.email}
+        onChangeText={(value) => handleChange("email", value)}
         autoCapitalize="none"
-        placeholder="Enter your email or phone"
+        placeholder="Enter your email"
+        keyboardType="email-address"
       />
-
-      <View style={{ width: '100%', maxWidth: 300, marginBottom: 10 }}>
-        <Button title="Continue" onPress={() => onLogin && onLogin()} color="#7f00ff" />
-      </View>
-
-      <Text style={{ marginVertical: 10, color: '#888' }}>Or</Text>
-
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
-        <TouchableOpacity style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: '#fff',
-          borderWidth: 1,
-          borderColor: '#ccc',
-          borderRadius: 8,
-          padding: 10,
-          marginHorizontal: 5,
-        }}>
-          <AntDesign name="google" size={20} color="#DB4437" style={{ marginRight: 8 }} />
-          <Text style={{ color: '#333' }}>Google</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: '#fff',
-          borderWidth: 1,
-          borderColor: '#ccc',
-          borderRadius: 8,
-          padding: 10,
-          marginHorizontal: 5,
-        }}>
-          <FontAwesome name="facebook" size={20} color="#4267B2" style={{ marginRight: 8 }} />
-          <Text style={{ color: '#333' }}>Facebook</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: '#fff',
-          borderWidth: 1,
-          borderColor: '#ccc',
-          borderRadius: 8,
-          padding: 10,
-          marginHorizontal: 5,
-        }}>
-          <AntDesign name="apple1" size={20} color="#000" style={{ marginRight: 8 }} />
-          <Text style={{ color: '#333' }}>Apple</Text>
+      <Text style={styles.inputLabel}>Password</Text>
+      <View style={styles.passwordInputContainer}>
+        <TextInput
+          style={styles.passwordInput}
+          value={form.password}
+          onChangeText={(value) => handleChange("password", value)}
+          autoCapitalize="none"
+          placeholder="Enter your password"
+          secureTextEntry={!showPassword}
+        />
+        <TouchableOpacity
+          onPress={() => setShowPassword(!showPassword)}
+          style={styles.eyeIcon}
+        >
+          <Ionicons
+            name={showPassword ? "eye" : "eye-off"}
+            size={20}
+            color="#888"
+          />
         </TouchableOpacity>
       </View>
-
-      <Text style={{ marginBottom: 8, color: '#7f00ff', fontWeight: 'bold' }}>Ghana</Text>
-
-      <Text style={{ fontSize: 11, color: '#888', textAlign: 'center', marginHorizontal: 10 }}>
-        By continuing, you agree to our{' '}
-        <Text style={{ color: '#7f00ff', textDecorationLine: 'underline' }}>Politica de confidentialitate si cookie-uri</Text>
-        {' '}and{' '}
-        <Text style={{ color: '#7f00ff', textDecorationLine: 'underline' }}>Terms & Conditions</Text>.
-      </Text>
-
-      <Text style={{ marginTop: 20 }}>Don't have an account?</Text>
-      <View style={{ width: 200, marginTop: 10 }}>
-        <Button title="Go to Signup" onPress={() => navigation.navigate('Signup')} color="#7f00ff" />
+      <View style={styles.buttonWrapper}>
+        <Button title="Login" color="#7f00ff" onPress={handleLogin} />
       </View>
+      <Text style={styles.signupPrompt}>Don't have an account?</Text>
+      <View style={styles.signupButtonWrapper}>
+        <Button
+          title="Create Account"
+          onPress={() => navigation.navigate("Signup")}
+          color="#7f00ff"
+        />
+      </View>
+      {/* write Google login code over here ~rycoe */}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    backgroundColor: "#fff",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#7f00ff",
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#333",
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  inputLabel: {
+    alignSelf: "flex-start",
+    marginLeft: 10,
+    marginBottom: 4,
+    width: "100%",
+    maxWidth: 300,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    width: "100%",
+    maxWidth: 300,
+    marginBottom: 16,
+    padding: 10,
+    borderRadius: 8,
+  },
+  passwordInputContainer: {
+    width: "100%",
+    maxWidth: 300,
+    marginBottom: 16, // Adjusted margin for consistency
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  passwordInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 8,
+  },
+  eyeIcon: {
+    marginLeft: -35,
+    padding: 8,
+  },
+  buttonWrapper: {
+    width: "100%",
+    maxWidth: 300,
+    marginBottom: 16,
+  },
+  signupPrompt: {
+    marginTop: 10,
+  },
+  signupButtonWrapper: {
+    width: 200, // Adjust as needed
+    marginTop: 10,
+  },
+});

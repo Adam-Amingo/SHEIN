@@ -1,109 +1,143 @@
-// components/TopNavBar.js
-import React, { useState } from 'react';
+
+import React from 'react';
 import {
   View,
   TextInput,
-  Image,
-  ScrollView,
   StyleSheet,
+  TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import TabItem from './TabItem'; // import the new component
+import TabItem from './TabItem';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
+import Voice from '@react-native-voice/voice';
 
-const tabs = ['All', 'Women', 'Lingerie & Sleep', 'Men', 'Shoes', 'Men', 'Bra', 'Jewelry & Acc', 'Curve', 'Home', 'Bags', 'Sports', 'Electronics'];
+const tabs = ['All', 'Women', 'Men', 'Kids', 'Curve', 'Home'];
 
-export default function TopNavBar() {
-  const [activeTab, setActiveTab] = useState(0);
+export default function TopNavBar({ activeTab, onTabChange }) {
+  const [searchText, setSearchText] = React.useState('');
+  const navigation = useNavigation();
+  const route = useRoute();
+
+  const getIconColor = (screen) =>
+    route.name === screen ? '#7F55B1' : '#7F55B1';
+
+  const handleSearch = () => {
+    alert(`Searching for: ${searchText}`);
+  };
+
+  const handlePickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      alert('Image selected!');
+    }
+  };
+
+  const handleVoiceSearch = async () => {
+    try {
+      await Voice.start('en-US');
+      Voice.onSpeechResults = (event) => {
+        const text = event.value[0];
+        setSearchText(text);
+        handleSearch();
+      };
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* Top icons + search */}
+
       <View style={styles.topRow}>
-        <Icon name="mail-outline" size={24} />
-        <Icon name="calendar-outline" size={24} style={styles.icon} />
+        <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
+          <Icon name="mail-outline" size={24} color={getIconColor('Notification')} style={styles.icon} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+          <Icon name="calendar-outline" size={24} color={getIconColor('Cart')} style={styles.icon} />
+        </TouchableOpacity>
+
         <View style={styles.searchBar}>
-          <Icon name="search-outline" size={20} />
-          <TextInput placeholder="Shorts" style={styles.input} />
-          <Icon name="camera-outline" size={20} />
-        </View>
-        <Icon name="heart-outline" size={24} style={styles.icon} />
-      </View>
-
-      {/* Tabs */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
-        {tabs.map((tab, idx) => (
-          <TabItem
-            key={idx}
-            label={tab}
-            isActive={activeTab === idx}
-            onPress={() => setActiveTab(idx)}
+          <TouchableOpacity onPress={handleSearch}>
+            <Icon name="search-outline" size={20} color="#7F55B1" style={styles.icon} />
+          </TouchableOpacity>
+          <TextInput
+            placeholder={route.name === 'Home' ? 'Search' : 'Categories'}
+            style={styles.input}
+            value={searchText}
+            onChangeText={setSearchText}
           />
-        ))}
-      </ScrollView>
+          {route.name !== 'Home' && (
+            <>
+              <TouchableOpacity onPress={handlePickImage}>
+                <Icon name="camera-outline" size={22} color="#7F55B1" style={{ marginHorizontal: 5 }} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleVoiceSearch}>
+                <Icon name="mic-outline" size={24} color="#7F55B1" style={{ marginHorizontal: 2 }} />
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
 
-      {/* Banner */}
-      <View style={styles.bannerWrapper}>
-        <Image
-          source={{ uri: 'https://example.com/banner.jpg' }}
-          style={styles.banner}
-        />
-        <Image
-          source={{ uri: 'https://example.com/card.jpg' }}
-          style={styles.cardImage}
-        />
+        <TouchableOpacity onPress={() => navigation.navigate('Wishlist')}>
+          <Icon name="heart-outline" size={24} color={getIconColor('Wishlist')} style={styles.icon} />
+        </TouchableOpacity>
       </View>
 
+      {/* Main category tabs */}
+      {route.name !== 'Home' && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
+          {tabs.map((tab) => (
+            <TabItem
+              key={tab}
+              label={tab}
+              isActive={activeTab === tab}
+              onPress={() => onTabChange && onTabChange(tab)}
+            />
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#E0F0FF',
-    padding: 10,
-
+    backgroundColor: '#fff',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#fff',
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginTop: 20
+    gap: 6,
+    marginTop: 15,
   },
   icon: {
-    marginHorizontal: 4,
+    marginHorizontal: 3,
   },
   searchBar: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    paddingHorizontal: 10,
+    backgroundColor: '#f5f0ff',
+    paddingHorizontal: 0,
     alignItems: 'center',
-    borderRadius: 8,
-    marginHorizontal: 4,
+    borderRadius: 10,
+    marginHorizontal: 3,
   },
   input: {
     flex: 1,
     marginHorizontal: 8,
   },
   tabContainer: {
-    marginTop: 10,
-  },
-  bannerWrapper: {
-    marginTop: 10,
-    position: 'relative',
-  },
-  banner: {
-    width: '100%',
-    height: 180,
-    borderRadius: 10,
-  },
-  cardImage: {
-    width: 100,
-    height: 130,
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    transform: [{ rotate: '-5deg' }],
-    borderRadius: 8,
+    marginTop: 5,
   },
 });

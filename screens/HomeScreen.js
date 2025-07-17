@@ -1,24 +1,24 @@
+
+
 import React from 'react';
-import { View, Text, ScrollView, SafeAreaView } from 'react-native';
-import TopNav from '../components/TopNav';
+import { View, StyleSheet } from 'react-native';
+import FadeInView from '../components/FadeInView';
+import TopNavBar from '../components/TopNav';
+import Banner from '../components/Banner';
 import ProductListComponent from '../components/ProductListComponent';
-import TabItem from '../components/TabItem';
 
-export default function HomeScreen() {
-
+export default function HomeScreen({ navigation }) {
   return (
-    <>
-      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-        <TopNav />
-        <TabItem />
-        <Text>Card , Product and API calls</Text>
-      </SafeAreaView>
-
-      <ProductListComponent />
-
-
-
-    </>
-
+    <FadeInView style={styles.container}>
+      <TopNavBar />
+      <ProductListComponent navigation={navigation} showBanner />
+    </FadeInView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});

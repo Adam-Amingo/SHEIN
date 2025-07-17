@@ -1,233 +1,51 @@
+
 import React from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
+import {
+    View,
+    FlatList,
+    StyleSheet,
+    Dimensions,
+} from 'react-native';
 import ProductCard from './ProductCard';
+import Banner from './Banner';
+import PRODUCTS from '../src/data/products';
 
-const PRODUCTS = [
-    {
-        id: '1',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '2',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '3',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '4',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '5',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '6',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '7',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '8',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '9',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '10',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '11',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '12',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '13',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '14',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '15',
-        name: 'Floral Midi Dress',
-        price: 29.99,
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1600180758890-6d8491b47ce6',
-        tag: 'Bestseller',
-    },
-    {
-        id: '16',
-        name: 'Men T-Shirt',
-        price: 19.99,
-        rating: 4.2,
-        image: 'https://images.unsplash.com/photo-1585386959984-a41552276b0e',
-        tag: 'New',
-    },
-    {
-        id: '17',
-        name: 'Women Sandals',
-        price: 39.99,
-        rating: 4.8,
-        image: 'https://images.unsplash.com/photo-1596464716122-08b2cfb38165',
-        tag: '',
-    },
-    {
-        id: '18',
-        name: 'Sneakers',
-        price: 49.99,
-        rating: 4.7,
-        image: 'https://images.unsplash.com/photo-1606813902894-6cfb1a00c318',
-        tag: 'Hot',
-    },
-    {
-        id: '19',
-        name: 'Sneakers',
-        price: 49.99,
-        rating: 4.7,
-        image: 'https://images.unsplash.com/photo-1606813902894-6cfb1a00c318',
-        tag: 'Hot',
-    },
+const screenWidth = Dimensions.get('window').width;
+const itemSpacing = 10;
+const numColumns = 2;
+const itemWidth = (screenWidth - itemSpacing * (numColumns + 1)) / numColumns;
 
-    {
-        id: '21',
-        name: 'Sneakers',
-        price: 49.99,
-        rating: 4.7,
-        image: 'https://images.unsplash.com/photo-1606813902894-6cfb1a00c318',
-        tag: 'Hot',
-    },
-    {
-        id: '22',
-        name: 'Sneakers',
-        price: 49.99,
-        rating: 4.7,
-        image: 'https://images.unsplash.com/photo-1606813902894-6cfb1a00c318',
-        tag: 'Hot',
-    },
-    {
-        id: '23',
-        name: 'Sneakers',
-        price: 49.99,
-        rating: 4.7,
-        image: 'https://images.unsplash.com/photo-1606813902894-6cfb1a00c318',
-        tag: 'Hot',
-    },
-    {
-        id: '24',
-        name: 'Sneakers',
-        price: 49.99,
-        rating: 4.7,
-        image: 'https://images.unsplash.com/photo-1606813902894-6cfb1a00c318',
-        tag: 'Hot',
-    },
-    {
-        id: '25',
-        name: 'Sneakers',
-        price: 49.99,
-        rating: 4.7,
-        image: 'https://images.unsplash.com/photo-1606813902894-6cfb1a00c318',
-        tag: 'Hot',
-    },
-    {
-        id: '26',
-        name: 'Handbag',
-        price: 59.99,
-        rating: 4.6,
-        image: 'https://images.unsplash.com/photo-1585386959984-a41552276b0e',
-        tag: '',
-    },
-];
+const ProductListComponent = ({ navigation, mainCategory = 'All', subCategory = '', showBanner = false }) => {
+    const filteredProducts = PRODUCTS.filter(product =>
+        (mainCategory === 'All' || product.category === mainCategory) &&
+        (!subCategory || product.subcategory === subCategory)
+    );
 
-const ProductListComponent = () => {
     const renderItem = ({ item }) => (
-        <ProductCard
-            image={item.image}
-            name={item.name}
-            price={item.price}
-            rating={item.rating}
-            tag={item.tag}
-            onPress={() => console.log('Pressed:', item.name)}
-        />
+        <View style={styles.productWrapper}>
+            <ProductCard
+                image={item.image}
+                name={item.name}
+                price={item.price}
+                rating={item.rating}
+                tag={item.tag}
+                onPress={() => navigation.navigate('ProductDetailsScreen', { item })}
+                onPressImage={() => navigation.navigate('FullImageScreen', { image: item.image })}
+            />
+        </View>
     );
 
     return (
         <View style={styles.container}>
             <FlatList
-                data={PRODUCTS}
+                data={filteredProducts}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.id}
-                numColumns={2}
+                keyExtractor={(item) => item.id.toString()}
+                numColumns={numColumns}
                 contentContainerStyle={styles.list}
                 columnWrapperStyle={styles.row}
                 showsVerticalScrollIndicator={false}
+                ListHeaderComponent={showBanner ? <Banner /> : null}
             />
         </View>
     );
@@ -236,13 +54,26 @@ const ProductListComponent = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: 10,
+        paddingHorizontal: itemSpacing,
+        backgroundColor: '#fefefe',
     },
     list: {
-        paddingBottom: 100,
+        paddingBottom: 20,
     },
     row: {
         justifyContent: 'space-between',
+        marginBottom: itemSpacing,
+    },
+    productWrapper: {
+        width: itemWidth,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.07,
+        shadowRadius: 4,
+        elevation: 3, // Android shadow
     },
 });
 

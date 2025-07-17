@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
-    paddingBottom: 4,
+    paddingBottom: 0,
   },
   activeTabBorder: {
     borderBottomColor: '#7f00ff',
