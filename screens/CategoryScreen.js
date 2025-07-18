@@ -1,4 +1,3 @@
-
 // // import React, { useState } from 'react';
 // // import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 // // import ProductListComponent from '../components/ProductListComponent';
@@ -59,7 +58,6 @@
 // //       <TabItem />
 
 // //     </View>
-
 
 // //   );
 // // }
@@ -322,32 +320,44 @@
 //   );
 // }
 
-
-
-import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import TopNav from '../components/TopNav';
-import ProductListComponent from '../components/ProductListComponent';
+import React, { useState, useMemo } from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import TopNav from "../components/TopNav";
+import ProductListComponent from "../components/ProductListComponent";
 
 const subcategories = {
-  All: ['Official dress', 'Casual dress', 'Beachwear', 'Sportswear', 'Nightwear', 'Footwear', 'Bags', 'Jewelry', 'Electronics', 'Furniture'],
-  Men: ['Men Casual', 'Men Official', 'Trousers', 'Suits', 'Sportswear', 'Footwear'],
-  Women: ['Casual dress', 'Official dress', 'Tops', 'Bags', 'Jewelry', 'Footwear'],
-  Kids: ['Casual dress', 'Tops', 'Footwear', 'Bags', 'Jewelry', 'Beachwear',],
-  Curve: ['Casual dress', 'Tops', 'Footwear', 'Bags', 'Jewelry', 'Beachwear'],
-  Home: ['Furniture', 'Decor', 'Kitchenware', 'Bedding', 'Lighting'],
+  All: [
+    "Official dress",
+    "Casual dress",
+    "Beachwear",
+    "Sportswear",
+    "Nightwear",
+    "Footwear",
+    "Bags",
+    "Jewelry",
+    "Electronics",
+    "Furniture",
+  ],
+  Men: ["Casual", "Official", "Trousers", "Suits", "Sportswear", "Footwear"],
+  Women: ["Casual", "Official", "Tops", "Bags", "Jewelry", "Footwear"],
+  Kids: ["Casual", "Tops", "Footwear", "Bags", "Jewelry", "Beachwear"],
+  Curve: ["Casual dress", "Tops", "Footwear", "Bags", "Jewelry", "Beachwear"],
+  Home: ["Furniture", "Decor", "Kitchenware", "Bedding", "Lighting"],
 };
 
 export default function CategoryScreen({ navigation }) {
-  const [activeMain, setActiveMain] = useState('All');
-  const [activeSub, setActiveSub] = useState(subcategories['All'][0]);
+  const [activeMain, setActiveMain] = useState("All");
+  const [activeSub, setActiveSub] = useState(subcategories["All"][0]);
 
-  const currentSubcategories = useMemo(() => subcategories[activeMain] || [], [activeMain]);
+  const currentSubcategories = useMemo(
+    () => subcategories[activeMain] || [],
+    [activeMain]
+  );
 
   const handleMainChange = (main) => {
     const newSubList = subcategories[main];
     setActiveMain(main);
-    setActiveSub(newSubList?.[0] || '');
+    setActiveSub(newSubList?.[0] || "");
   };
 
   const handleSubChange = (item) => {
@@ -357,23 +367,27 @@ export default function CategoryScreen({ navigation }) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
       {/* Top Navigation */}
       <TopNav activeTab={activeMain} onTabChange={handleMainChange} />
 
-
       {/* Subcategory Scroll */}
-      <View style={{
-        borderTopWidth: 1,
-        borderTopColor: '#eee',
-        backgroundColor: '#faf9fd',
-        paddingVertical: 8,
-        paddingBottom: 12,
-      }}>
+      <View
+        style={{
+          borderTopWidth: 1,
+          borderTopColor: "#eee",
+          backgroundColor: "#faf9fd",
+          paddingVertical: 8,
+          paddingBottom: 12,
+        }}
+      >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 10, alignItems: 'center' }}
+          contentContainerStyle={{
+            paddingHorizontal: 10,
+            alignItems: "center",
+          }}
         >
           {currentSubcategories.length > 0 ? (
             currentSubcategories.map((item) => (
@@ -383,24 +397,33 @@ export default function CategoryScreen({ navigation }) {
                 style={{
                   paddingVertical: 8,
                   paddingHorizontal: 18,
-                  backgroundColor: activeSub === item ? '#7f00ff' : 'transparent',
+                  backgroundColor:
+                    activeSub === item ? "#7f00ff" : "transparent",
                   borderRadius: 20,
                   marginRight: 10,
                   borderWidth: activeSub === item ? 0 : 1,
-                  borderColor: activeSub === item ? 'transparent' : '#e0e0e0',
+                  borderColor: activeSub === item ? "transparent" : "#e0e0e0",
                 }}
               >
-                <Text style={{
-                  color: activeSub === item ? '#fff' : '#7F55B1',
-                  fontWeight: activeSub === item ? 'bold' : '600',
-                  fontSize: 15,
-                }}>
+                <Text
+                  style={{
+                    color: activeSub === item ? "#fff" : "#7F55B1",
+                    fontWeight: activeSub === item ? "bold" : "600",
+                    fontSize: 15,
+                  }}
+                >
                   {item.trim()}
                 </Text>
               </TouchableOpacity>
             ))
           ) : (
-            <Text style={{ paddingHorizontal: 16, fontStyle: 'italic', color: '#aaa' }}>
+            <Text
+              style={{
+                paddingHorizontal: 16,
+                fontStyle: "italic",
+                color: "#aaa",
+              }}
+            >
               No subcategories found.
             </Text>
           )}

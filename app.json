@@ -13,17 +13,27 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wandana.wandana",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.willard_henry.MyFirstApp"
     },
     "web": {
       "favicon": "./src/src/assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f9079d47-3ab9-4353-bbda-b0b0caed06bf"
+      }
     }
   }
 }

@@ -1,3 +1,4 @@
+// screens/WelcomeScreen.js
 import React, { useState } from "react";
 import {
   View,
@@ -7,7 +8,9 @@ import {
   Modal,
   TouchableOpacity,
   FlatList,
+  StyleSheet, // Import StyleSheet
 } from "react-native";
+import { useNavigation } from "@react-navigation/native"; // Import useNavigation hook
 
 const countries = [
   { name: "Ghana", languages: ["English", "Akan", "Ewe"], currency: "GHS ₵" },
@@ -39,7 +42,10 @@ const countries = [
 const allLanguages = Array.from(new Set(countries.flatMap((c) => c.languages)));
 const allCurrencies = Array.from(new Set(countries.map((c) => c.currency)));
 
-export default function WelcomeScreen({ setIsAuthenticated }) {
+export default function WelcomeScreen() {
+  // Removed setIsAuthenticated prop
+  const navigation = useNavigation(); // Get navigation object
+
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [selectedLanguage, setSelectedLanguage] = useState(
     countries[0].languages[0]
@@ -61,115 +67,47 @@ export default function WelcomeScreen({ setIsAuthenticated }) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={styles.container}>
       {/* Sky map or decorative image at the top */}
-      <View
-        style={{
-          width: "100%",
-          height: 200,
-          backgroundColor: "#e0eaff",
-          justifyContent: "flex-end",
-          alignItems: "center",
-        }}
-      >
+      <View style={styles.topImageContainer}>
         <Image
-          source={require("../src/assets/sky.png")}
-          style={{
-            width: "100%",
-            height: 300,
-            resizeMode: "cover",
-            position: "absolute",
-            top: 0,
-            left: 0,
-          }}
+          source={require("../src/assets/sky.png")} // Ensure this path is correct
+          style={styles.topImage}
         />
       </View>
       {/* Content below the image */}
-      <View
-        style={{
-          flex: 55,
-          alignItems: "flex-start",
-          justifyContent: "flex-start",
-          padding: 27,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 25,
-            fontWeight: "bold",
-            color: "#7f00ff",
-            marginBottom: 45,
-            marginTop: 40,
-            letterSpacing: 2,
-            textAlign: "left",
-            width: "100%",
-          }}
-        >
-          Welcome to WANDANA
-        </Text>
+      <View style={styles.contentContainer}>
+        <Text style={styles.title}>Welcome to WANDANA</Text>
         {/* Location */}
-        <Text style={{ fontSize: 18, color: "#333", marginBottom: 4 }}>
-          Location
-        </Text>
+        <Text style={styles.label}>Location</Text>
         <TouchableOpacity onPress={() => setCountryModalVisible(true)}>
-          <Text style={{ fontSize: 16, color: "#7f00ff", marginBottom: 12 }}>
-            {selectedCountry.name}
-          </Text>
+          <Text style={styles.selectedValue}>{selectedCountry.name}</Text>
         </TouchableOpacity>
         {/* Language */}
-        <Text style={{ fontSize: 18, color: "#333", marginBottom: 4 }}>
-          Language
-        </Text>
+        <Text style={styles.label}>Language</Text>
         <TouchableOpacity onPress={() => setLanguageModalVisible(true)}>
-          <Text style={{ fontSize: 16, color: "#7f00ff", marginBottom: 12 }}>
-            {selectedLanguage}
-          </Text>
+          <Text style={styles.selectedValue}>{selectedLanguage}</Text>
         </TouchableOpacity>
         {/* Currency */}
-        <Text style={{ fontSize: 18, color: "#333", marginBottom: 4 }}>
-          Currency
-        </Text>
+        <Text style={styles.label}>Currency</Text>
         <TouchableOpacity onPress={() => setCurrencyModalVisible(true)}>
-          <Text style={{ fontSize: 16, color: "#7f00ff", marginBottom: 12 }}>
-            {selectedCurrency}
-          </Text>
+          <Text style={styles.selectedValue}>{selectedCurrency}</Text>
         </TouchableOpacity>
 
         {/* Country Modal */}
         <Modal visible={countryModalVisible} animationType="slide" transparent>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "#00000088",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: 10,
-                padding: 20,
-                width: 300,
-                maxHeight: 400,
-              }}
-            >
-              <Text
-                style={{ fontWeight: "bold", fontSize: 18, marginBottom: 10 }}
-              >
-                Select Country
-              </Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Country</Text>
               <FlatList
                 data={countries}
                 keyExtractor={(item) => item.name}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     onPress={() => handleCountrySelect(item)}
-                    style={{ paddingVertical: 10 }}
+                    style={styles.modalOption}
                   >
-                    <Text style={{ fontSize: 16, color: "#7f00ff" }}>
-                      {item.name}
-                    </Text>
+                    <Text style={styles.modalOptionText}>{item.name}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -184,28 +122,9 @@ export default function WelcomeScreen({ setIsAuthenticated }) {
 
         {/* Language Modal */}
         <Modal visible={languageModalVisible} animationType="slide" transparent>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "#00000088",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: 10,
-                padding: 20,
-                width: 300,
-                maxHeight: 400,
-              }}
-            >
-              <Text
-                style={{ fontWeight: "bold", fontSize: 18, marginBottom: 10 }}
-              >
-                Select Language
-              </Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Language</Text>
               <FlatList
                 data={selectedCountry.languages}
                 keyExtractor={(item) => item}
@@ -215,11 +134,9 @@ export default function WelcomeScreen({ setIsAuthenticated }) {
                       setSelectedLanguage(item);
                       setLanguageModalVisible(false);
                     }}
-                    style={{ paddingVertical: 10 }}
+                    style={styles.modalOption}
                   >
-                    <Text style={{ fontSize: 16, color: "#7f00ff" }}>
-                      {item}
-                    </Text>
+                    <Text style={styles.modalOptionText}>{item}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -234,28 +151,9 @@ export default function WelcomeScreen({ setIsAuthenticated }) {
 
         {/* Currency Modal */}
         <Modal visible={currencyModalVisible} animationType="slide" transparent>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "#00000088",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: 10,
-                padding: 20,
-                width: 300,
-                maxHeight: 400,
-              }}
-            >
-              <Text
-                style={{ fontWeight: "bold", fontSize: 18, marginBottom: 10 }}
-              >
-                Select Currency
-              </Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Currency</Text>
               <FlatList
                 data={allCurrencies}
                 keyExtractor={(item) => item}
@@ -265,11 +163,9 @@ export default function WelcomeScreen({ setIsAuthenticated }) {
                       setSelectedCurrency(item);
                       setCurrencyModalVisible(false);
                     }}
-                    style={{ paddingVertical: 10 }}
+                    style={styles.modalOption}
                   >
-                    <Text style={{ fontSize: 16, color: "#7f00ff" }}>
-                      {item}
-                    </Text>
+                    <Text style={styles.modalOptionText}>{item}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -282,32 +178,104 @@ export default function WelcomeScreen({ setIsAuthenticated }) {
           </View>
         </Modal>
 
-        <View
-          style={{
-            width: 300,
-            marginBottom: 14,
-            marginTop: 55,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+        <View style={styles.goShoppingButtonContainer}>
           <Button
             title="Go Shopping"
             color="#7f00ff"
-            onPress={() => setIsAuthenticated(true)}
+            // --- FIX: Navigate to Login screen instead of calling setIsAuthenticated ---
+            onPress={() => navigation.navigate("Login")}
           />
         </View>
-        <Text
-          style={{
-            fontSize: 12,
-            color: "#888",
-            marginTop: 11,
-            textAlign: "center",
-          }}
-        >
+        <Text style={styles.hintText}>
           You can go to the “Settings” page to modify later
         </Text>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  topImageContainer: {
+    width: "100%",
+    height: 200,
+    backgroundColor: "#e0eaff",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  topImage: {
+    width: "100%",
+    height: 300,
+    resizeMode: "cover",
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+  contentContainer: {
+    flex: 55,
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    padding: 27,
+  },
+  title: {
+    fontSize: 25,
+    fontWeight: "bold",
+    color: "#7f00ff",
+    marginBottom: 45,
+    marginTop: 40,
+    letterSpacing: 2,
+    textAlign: "left",
+    width: "100%",
+  },
+  label: {
+    fontSize: 18,
+    color: "#333",
+    marginBottom: 4,
+  },
+  selectedValue: {
+    fontSize: 16,
+    color: "#7f00ff",
+    marginBottom: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "#00000088",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    width: 300,
+    maxHeight: 400,
+  },
+  modalTitle: {
+    fontWeight: "bold",
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  modalOption: {
+    paddingVertical: 10,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: "#7f00ff",
+  },
+  goShoppingButtonContainer: {
+    width: 300,
+    marginBottom: 14,
+    marginTop: 55,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  hintText: {
+    fontSize: 12,
+    color: "#888",
+    marginTop: 11,
+    textAlign: "center",
+  },
+});

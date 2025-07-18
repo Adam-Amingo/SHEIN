@@ -1,5 +1,4 @@
-//I'm changing the login screen as well, it's lacking some features and i want to implement some security features ~rycoe
-
+// screens/LoginScreen.js
 import React, { useState } from "react";
 import {
   View,
@@ -9,63 +8,54 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ActivityIndicator, // Added for loading state
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // For storing JWT (it's a security feature)
-import { login } from "../api"; // Import the login function from the backend API module
+import { useAuth } from "../context/AuthContext"; // Import useAuth hook
 
-export default function LoginScreen({ navigation, onLogin }) {
-  // State to hold form data for login
+export default function LoginScreen({ navigation }) {
+  const { login } = useAuth(); // Get the login function from AuthContext
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
-
-  // State for toggling password visibility
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Added loading state
 
-  // Generic function to update form fields as user types
   const handleChange = (field, value) => {
     setForm({ ...form, [field]: value });
   };
 
-  // Function to handle the login process when the "Login" button is pressed
   const handleLogin = async () => {
-    //Client-side validation
     if (!form.email || !form.password) {
       Alert.alert("Validation Error", "Please enter both email and password.");
       return;
     }
 
+    setIsLoading(true); // Set loading to true
     try {
-      // Call the login function from API module with the form data
-      // Assume 'login' function in '../api.js' returns { status: 'success', token: 'jwt', user: 'userEmail' } on success
-      // Or { status: 'error', message: '...' } on failure
-      const result = await login(form);
+      const result = await login(form); // Call the login function from useAuth
 
-      // Show an alert with the result of the login attempt
-      if (result.status === "success") {
-        const { token, user } = result.data;
-        // Store the JWT token and user email in AsyncStorage for persistent login
-        // (so that when you close the app and reopen it, you woulnt have to login again)
-        await AsyncStorage.setItem("jwtToken", token);
-        await AsyncStorage.setItem("userEmail", user.email);
-
+      // --- FIX: Change result.status to result.success ---
+      if (result.success) {
         Alert.alert("Success", result.message || "Login Successful!");
-        onLogin();
+        // The AuthContext will automatically update isAuthenticated,
+        // and App.js will handle navigation to AppStack.
+        // No explicit navigation.navigate('MainTabs') or onLogin() needed here.
       } else {
-        // Show error message if login fails
         Alert.alert(
           "Error",
           result.message || "Login failed. Please check your credentials."
         );
       }
     } catch (error) {
-      console.error("Login API call failed:", error);
+      console.error("Login process failed:", error);
       Alert.alert(
         "Error",
         "Network error or unable to connect. Please try again later."
       );
+    } finally {
+      setIsLoading(false); // Set loading to false
     }
   };
 
@@ -81,6 +71,7 @@ export default function LoginScreen({ navigation, onLogin }) {
         autoCapitalize="none"
         placeholder="Enter your email"
         keyboardType="email-address"
+        editable={!isLoading} // Disable input when loading
       />
       <Text style={styles.inputLabel}>Password</Text>
       <View style={styles.passwordInputContainer}>
@@ -91,10 +82,12 @@ export default function LoginScreen({ navigation, onLogin }) {
           autoCapitalize="none"
           placeholder="Enter your password"
           secureTextEntry={!showPassword}
+          editable={!isLoading} // Disable input when loading
         />
         <TouchableOpacity
           onPress={() => setShowPassword(!showPassword)}
           style={styles.eyeIcon}
+          disabled={isLoading} // Disable button when loading
         >
           <Ionicons
             name={showPassword ? "eye" : "eye-off"}
@@ -104,7 +97,12 @@ export default function LoginScreen({ navigation, onLogin }) {
         </TouchableOpacity>
       </View>
       <View style={styles.buttonWrapper}>
-        <Button title="Login" color="#7f00ff" onPress={handleLogin} />
+        <Button
+          title={isLoading ? "Logging in..." : "Login"}
+          color="#7f00ff"
+          onPress={handleLogin}
+          disabled={isLoading}
+        />
       </View>
       <Text style={styles.signupPrompt}>Don't have an account?</Text>
       <View style={styles.signupButtonWrapper}>
@@ -112,6 +110,7 @@ export default function LoginScreen({ navigation, onLogin }) {
           title="Create Account"
           onPress={() => navigation.navigate("Signup")}
           color="#7f00ff"
+          disabled={isLoading} // Disable button when loading
         />
       </View>
       {/* write Google login code over here ~rycoe */}

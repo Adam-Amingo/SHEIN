@@ -1,6 +1,4 @@
-// @Adam-Amingo @ndonkoh I am changing the SignupScreen to use the signup function from the API module.
-// This new format would help me implement my module better :) ~rycoe
-
+// screens/SignupScreen.js
 import React, { useState } from "react";
 import {
   View,
@@ -10,46 +8,37 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ActivityIndicator, // Added for loading state
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { signup } from "../api"; // Import the signup function from the API module
+// import { signup } from "../api"; // No longer needed directly here
+import { useAuth } from "../context/AuthContext"; // Import useAuth hook
 
 export default function SignupScreen({ navigation }) {
-  // State to hold form data for signup (email, password, username)
+  const { signup } = useAuth(); // Get the signup function from AuthContext
   const [form, setForm] = useState({
     username: "",
     email: "",
-    password: ""
-    
-
-    // In my backend module, there is sex and dob but your original code didnt have it so im not going to implement it
+    password: "",
   });
-
-  // State for confirming password (separate from form as it's for validation so I'll use an in-screen function)
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  // States for toggling password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Added loading state
 
-  // Generic function to update form fields as user types
   const handleChange = (field, value) => {
     setForm({ ...form, [field]: value });
   };
 
-  // Function to handle the signup process when the "Sign Up" button is pressed
   const handleSignup = async () => {
-    //Client-side validation
     if (!form.username || !form.email || !form.password || !confirmPassword) {
       Alert.alert("Validation Error", "Please fill all fields.");
       return;
     }
-    // In-screen function for confirm password
     if (form.password !== confirmPassword) {
       Alert.alert("Validation Error", "Passwords do not match.");
       return;
     }
-    // Basic password strength check (I actually got this part from chatgpt and idk if it'll work)
     if (
       form.password.length < 8 ||
       !/[a-zA-Z]/.test(form.password) ||
@@ -62,28 +51,27 @@ export default function SignupScreen({ navigation }) {
       return;
     }
 
+    setIsLoading(true); // Set loading to true
     try {
-      // Call the signup function from the API module with the form data
-      const result = await signup(form);
+      const result = await signup(form); // Call the signup function from useAuth
 
-      // Show an alert with the result of the signup attempt
-      if (result.status === "success") {
+      if (result.success) {
         Alert.alert("Success", result.message);
-        // Navigate to login screen after successful signup
-        navigation.navigate("Login");
+        navigation.navigate("Login"); // Navigate to login screen after successful signup
       } else {
-        // Show error message if signup fails
         Alert.alert(
           "Error",
           result.message || "Signup failed. Please try again."
         );
       }
     } catch (error) {
-      console.error("Signup API call failed:", error);
+      console.error("Signup process failed:", error);
       Alert.alert(
         "Error",
         "Network error or unable to connect. Please try again later."
       );
+    } finally {
+      setIsLoading(false); // Set loading to false
     }
   };
 
@@ -101,6 +89,7 @@ export default function SignupScreen({ navigation }) {
         onChangeText={(value) => handleChange("username", value)}
         autoCapitalize="none"
         placeholder="Choose a username"
+        editable={!isLoading}
       />
 
       <Text style={styles.inputLabel}>Email</Text>
@@ -111,6 +100,7 @@ export default function SignupScreen({ navigation }) {
         autoCapitalize="none"
         placeholder="Enter your email"
         keyboardType="email-address"
+        editable={!isLoading}
       />
 
       <Text style={styles.inputLabel}>Password</Text>
@@ -122,10 +112,12 @@ export default function SignupScreen({ navigation }) {
           autoCapitalize="none"
           placeholder="Create a password"
           secureTextEntry={!showPassword}
+          editable={!isLoading}
         />
         <TouchableOpacity
           onPress={() => setShowPassword(!showPassword)}
           style={styles.eyeIcon}
+          disabled={isLoading}
         >
           <Ionicons
             name={showPassword ? "eye" : "eye-off"}
@@ -140,14 +132,16 @@ export default function SignupScreen({ navigation }) {
         <TextInput
           style={styles.passwordInput}
           value={confirmPassword}
-          onChangeText={setConfirmPassword} // Managed by its own state setter (In-screen function from above)
+          onChangeText={setConfirmPassword}
           autoCapitalize="none"
           placeholder="Confirm your password"
           secureTextEntry={!showConfirm}
+          editable={!isLoading}
         />
         <TouchableOpacity
           onPress={() => setShowConfirm(!showConfirm)}
           style={styles.eyeIcon}
+          disabled={isLoading}
         >
           <Ionicons
             name={showConfirm ? "eye" : "eye-off"}
@@ -162,7 +156,12 @@ export default function SignupScreen({ navigation }) {
       </Text>
 
       <View style={styles.buttonWrapper}>
-        <Button title="Register" color="#7f00ff" onPress={handleSignup} />
+        <Button
+          title={isLoading ? "Registering..." : "Register"}
+          color="#7f00ff"
+          onPress={handleSignup}
+          disabled={isLoading}
+        />
       </View>
 
       <Text style={styles.loginPrompt}>Already have an account?</Text>
@@ -171,6 +170,7 @@ export default function SignupScreen({ navigation }) {
           title="Go to Login"
           onPress={() => navigation.navigate("Login")}
           color="#7f00ff"
+          disabled={isLoading}
         />
       </View>
     </View>
@@ -250,5 +250,3 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 });
-
-//~rycoe
