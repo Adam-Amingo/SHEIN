@@ -3,7 +3,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Ensure AsyncStorage is imported for token handling
 
-const BASE_URL = "https://ed84e2a88035.ngrok-free.app"; // using ngrok provided url address @rycoe
+const BASE_URL = "https://84d83b915c31.ngrok-free.app"; // using ngrok provided url address @rycoe
 // it will refresh if i turn off my computer or if the ngrok session expires
 
 /**
@@ -110,6 +110,7 @@ export const getProductById = async (productId) => {
 export const addItemToCart = async (itemData) => {
   try {
     const token = await AsyncStorage.getItem("jwtToken");
+    console.log("JWT Token from AsyncStorage in addItemToCart:", token);
     if (!token) {
       return {
         success: false,
