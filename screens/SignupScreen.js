@@ -57,7 +57,10 @@ export default function SignupScreen({ navigation }) {
 
       if (result.success) {
         Alert.alert("Success", result.message);
-        navigation.navigate("Login"); // Navigate to login screen after successful signup
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Home" }], // or "Home" if that's your main screen
+        });
       } else {
         Alert.alert(
           "Error",

@@ -19,67 +19,74 @@ const itemWidth = (screenWidth - itemSpacing * (numColumns + 1)) / numColumns;
 
 const ProductListComponent = ({
   navigation,
-  mainCategory = "All",
-  subCategory = "",
+  mainCategory = "All", // Default prop value
+  subCategory = "", // Default prop value
   showBanner = false,
 }) => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true); // Initial loading state for first fetch
-  const [loadingMore, setLoadingMore] = useState(false); // Loading state for subsequent pages
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(0); // Current page number (0-indexed)
-  const [hasMore, setHasMore] = useState(true); // Flag to check if there are more pages
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
-  // useCallback to memoize fetchProducts, preventing unnecessary re-creations
   const fetchProducts = useCallback(
     async (pageNumber = 0, append = false) => {
       if (pageNumber === 0) {
-        // Only show full screen loader for initial fetch
         setLoading(true);
       } else {
-        // Show footer loader for subsequent fetches
         setLoadingMore(true);
       }
       setError(null);
 
       try {
-        // Call the getProducts function with pagination parameters
-        // Assuming getProducts in api.js now returns the full Page object from Spring Boot
-        const result = await getProducts(pageNumber, 10, "id,asc"); // Fetch 10 items per page
+        // --- CORRECTED PART HERE ---
+        // Prepare category and subcategory values for the API call
+        // 'All' category should be sent as null/undefined to backend to get all main categories
+        const categoryParam = mainCategory === "All" ? null : mainCategory;
+        // Empty subCategory should be sent as null/undefined to backend to get all subcategories
+        const subcategoryParam = subCategory === "" ? null : subCategory;
 
-        if (result.success && result.data) {
-          // Filter on the frontend if the backend doesn't support category/subcategory filtering
-          // or if you only fetch a subset and need further refinement.
-          const newProducts = result.data.content.filter(
-            (product) =>
-              (mainCategory === "All" || product.category === mainCategory) &&
-              (!subCategory || product.subcategory === subCategory)
-          );
+        const result = await getProducts(
+          pageNumber,
+          10,
+          "id,asc",
+          categoryParam, // Pass the main category
+          subcategoryParam // Pass the subcategory
+        );
+        // --- END CORRECTED PART ---
 
+        if (result.success && result.data && result.data.content) {
           setProducts((prevProducts) =>
-            append ? [...prevProducts, ...newProducts] : newProducts
+            append
+              ? [...prevProducts, ...result.data.content]
+              : result.data.content
           );
-          setHasMore(!result.data.last); // 'last' property from Spring Data Page indicates if it's the last page
-          setPage(pageNumber); // Update current page
+          setHasMore(!result.data.last);
+          setPage(pageNumber);
         } else {
           setError(result.message || "Failed to load products.");
-          setHasMore(false); // No more data if there's an error
+          setHasMore(false);
         }
       } catch (err) {
         console.error("Failed to fetch products:", err);
         setError("Failed to load products. Please try again.");
-        setHasMore(false); // No more data if there's an error
+        setHasMore(false);
       } finally {
         setLoading(false);
         setLoadingMore(false);
       }
     },
-    [mainCategory, subCategory]
-  ); // Dependencies: re-fetch if category/subcategory props change
+    [mainCategory, subCategory] // Dependencies: re-fetch if category/subcategory props change
+  );
 
   // Initial fetch when component mounts or category/subcategory changes
   useEffect(() => {
-    fetchProducts(0, false); // Fetch first page, do not append
+    // Reset products and page when filters change before fetching new data
+    setProducts([]);
+    setPage(0);
+    setHasMore(true); // Assume there might be more data with new filters
+    fetchProducts(0, false); // Fetch first page for new filters, do not append
   }, [fetchProducts]); // Dependency on memoized fetchProducts
 
   // Function to load more products when scrolling to the end
@@ -89,7 +96,6 @@ const ProductListComponent = ({
     }
   };
 
-  // Render item for FlatList
   const renderItem = ({ item }) => (
     <View style={styles.productWrapper}>
       <ProductCard
@@ -106,7 +112,6 @@ const ProductListComponent = ({
     </View>
   );
 
-  // Footer component for FlatList to show loading indicator for more items
   const renderFooter = () => {
     if (!loadingMore) return null;
     return (
@@ -117,7 +122,6 @@ const ProductListComponent = ({
     );
   };
 
-  // Initial loading state (full screen indicator)
   if (loading && products.length === 0) {
     return (
       <View style={styles.loadingContainer}>
@@ -127,7 +131,6 @@ const ProductListComponent = ({
     );
   }
 
-  // Error state (full screen error message)
   if (error && products.length === 0) {
     return (
       <View style={styles.errorContainer}>
@@ -139,12 +142,11 @@ const ProductListComponent = ({
     );
   }
 
-  // Empty state (no products found after initial load)
   if (products.length === 0 && !loading) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>
-          No products found for this category.
+          No products found for this category or subcategory.
         </Text>
       </View>
     );
@@ -157,16 +159,15 @@ const ProductListComponent = ({
         renderItem={renderItem}
         keyExtractor={(item) =>
           item.id ? item.id.toString() : Math.random().toString()
-        }
+        } // Ensure unique keys for FlatList
         numColumns={numColumns}
         contentContainerStyle={styles.list}
         columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={showBanner ? <Banner /> : null}
-        // Infinite scroll props
-        onEndReached={handleLoadMore} // Call when scroll reaches end
-        onEndReachedThreshold={0.5} // Trigger when 50% from end
-        ListFooterComponent={renderFooter} // Show loading indicator at bottom
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={renderFooter}
       />
     </View>
   );
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 4,
-    elevation: 3, // Android shadow
+    elevation: 3,
   },
   loadingContainer: {
     flex: 1,

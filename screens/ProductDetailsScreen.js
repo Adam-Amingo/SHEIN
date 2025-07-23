@@ -23,7 +23,7 @@ import { WishlistContext } from "../context/WishlistContext";
 import { useTheme } from "../ThemeContext";
 
 // API functions
-import { getProductById, addItemToCart } from "../api";
+import { getProductById } from "../api"; // Removed addItemToCart as it's now handled by CartContext
 
 // Mock Data (replace with actual backend data for reviews/related products)
 import REVIEWS from "../src/data/reviews"; // Mock reviews
@@ -36,13 +36,12 @@ if (Platform.OS === "android") {
 
 export default function ProductDetailsScreen({ route, navigation }) {
   const { item: initialProduct } = route.params;
-  const { addToCart: addToCartContext } = useContext(CartContext);
+  const { addItem } = useContext(CartContext); // Correctly destructure 'addItem' from CartContext
   const { addToWishlist } = useContext(WishlistContext);
   const { darkTheme } = useTheme();
 
   const [product, setProduct] = useState(initialProduct);
   const [quantity, setQuantity] = useState(1);
-  // Initialize selectedSize directly from the product's singular size from backend
   const [selectedSize, setSelectedSize] = useState(
     initialProduct.size || "N/A"
   );
@@ -65,7 +64,6 @@ export default function ProductDetailsScreen({ route, navigation }) {
       const result = await getProductById(product.id);
       if (result.success && result.data) {
         setProduct(result.data); // Update product state with fresh data from backend
-        // --- FIX 2: Ensure selectedSize is updated from the fetched product.size ---
         setSelectedSize(result.data.size || "N/A");
         console.log(
           "ProductDetailsScreen: Fetched product details from backend:",
@@ -93,7 +91,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
     } finally {
       setFetchingProduct(false);
     }
-  }, [product?.id]); // Dependency on product ID
+  }, [product?.id]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -108,20 +106,15 @@ export default function ProductDetailsScreen({ route, navigation }) {
 
   const handleQuantityChange = (type) => {
     setQuantity((prevQty) => {
-      // --- FIX 3: Simplified quantity logic, relying on button's 'disabled' prop ---
       if (type === "add") {
-        // If the button is not disabled, it means prevQty < product.stock
         return prevQty + 1;
       } else {
-        // type === 'subtract'
-        // Ensure quantity doesn't go below 1
         return Math.max(1, prevQty - 1);
       }
     });
   };
 
   const handleAddToCart = async () => {
-    // Ensure product, quantity, and a valid size are selected
     if (
       !product ||
       quantity <= 0 ||
@@ -138,44 +131,29 @@ export default function ProductDetailsScreen({ route, navigation }) {
 
     setAddingToCart(true);
     try {
-      const cartItemData = {
-        productId: product.id,
-        quantity: quantity,
-        size: selectedSize, // Send selected size (which is product.size)
-      };
-      console.log("ProductDetailsScreen: Sending to cart API:", cartItemData);
-      const result = await addItemToCart(cartItemData);
+      // --- FIX: Removed the redundant direct API call to addItemToCart ---
+      // The `addItem` from CartContext already handles the backend call.
+      // console.log("ProductDetailsScreen: Sending to cart API:", cartItemData);
+      // const result = await addItemToCart(cartItemData); // This line was causing the double quantity bug.
 
-      if (result.success) {
-        fetchProductDetails(); // Refetch product details to get updated stock
-        // Add to local cart context (local cart can store size, but backend CartItem won't persist it)
-        addToCartContext({ ...product, quantity, size: selectedSize });
-        Alert.alert(
-          "Success",
-          `${quantity} x ${product.name} (${selectedSize}) added to cart!`
-        );
-        navigation.navigate("MainTabs", { screen: "Cart" });
-      } else {
-        Alert.alert(
-          "Error",
-          result.message || "Failed to add to cart. Please try again."
-        );
-        console.error(
-          "ProductDetailsScreen: Add to cart failed:",
-          result.message
-        );
-      }
+      // Call the `addItem` function from CartContext to add the item
+      // This function internally makes the API call and updates local state.
+      await addItem(product, quantity, selectedSize);
+
+      Alert.alert(
+        "Success",
+        `${quantity} x ${product.name} (${selectedSize}) added to cart!`
+      );
+      navigation.navigate("MainTabs", { screen: "Cart" });
     } catch (error) {
       Alert.alert(
         "Error",
-        "Network error during add to cart. Please try again."
+        error.message || "Failed to add to cart. Please try again."
       );
-      console.error(
-        "ProductDetailsScreen: Network error during add to cart:",
-        error
-      );
+      console.error("ProductDetailsScreen: Error during add to cart:", error);
     } finally {
       setAddingToCart(false);
+      fetchProductDetails(); // Refetch product details to get updated stock after adding to cart
     }
   };
 
@@ -341,7 +319,6 @@ export default function ProductDetailsScreen({ route, navigation }) {
               <TouchableOpacity
                 onPress={() => handleQuantityChange("add")}
                 style={[styles.qtyBtn, darkTheme && styles.darkQtyBtn]}
-                // --- FIX 3: Ensure button is disabled when quantity is at stock limit or stock is zero ---
                 disabled={
                   quantity >= product.stock ||
                   addingToCart ||

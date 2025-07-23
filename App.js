@@ -1,3 +1,5 @@
+import { enableScreens } from "react-native-screens";
+enableScreens();
 import "react-native-reanimated";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -198,7 +200,7 @@ function AppStack() {
       <Stack.Screen
         name="SuccessScreen"
         component={SuccessScreen}
-        options={{ title: "Order Success" }}
+        options={{ title: "Payment Success", headerShown: false }} // Often hide header for success screens
       />
       <Stack.Screen
         name="FullImageScreen"

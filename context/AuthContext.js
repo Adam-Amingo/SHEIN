@@ -7,17 +7,20 @@ import React, {
   useCallback,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { login as apiLogin, signup as apiSignup } from "../api"; // Assuming your API functions are in '../api'
+// Import your API functions. We'll update `api.js` to export a default instance later.
+import { login as apiLogin, signup as apiSignup } from "../api";
+// Also import the api instance itself if you want to set the logout handler on it
+import api from "../api"; // Assuming api.js now exports default 'api' instance
 
 // Create the AuthContext
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 // AuthProvider component that wraps your application
 export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
     token: null,
     isAuthenticated: false,
-    user: null, // You might store user details here (e.g., email, id)
+    user: null,
   });
   const [loading, setLoading] = useState(true);
 
@@ -26,13 +29,13 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("jwtToken");
-      const userJson = await AsyncStorage.getItem("user"); // NEW: Also retrieve user details
+      const userJson = await AsyncStorage.getItem("user");
 
       if (token && userJson) {
         setAuthState({
           token: token,
           isAuthenticated: true,
-          user: JSON.parse(userJson), // Parse the stored user JSON
+          user: JSON.parse(userJson),
         });
       } else {
         setAuthState({
@@ -59,23 +62,20 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const response = await apiLogin(credentials);
 
-      // --- FIX: Correctly check backend 'status' and access nested 'data.token' and 'data.user' ---
       if (
         response.status === "success" &&
         response.data &&
         response.data.token
       ) {
-        await AsyncStorage.setItem("jwtToken", response.data.token); // Store the token
-        await AsyncStorage.setItem("user", JSON.stringify(response.data.user)); // Store user details
+        await AsyncStorage.setItem("jwtToken", response.data.token);
+        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
         setAuthState({
           token: response.data.token,
           isAuthenticated: true,
-          user: response.data.user, // Set user details from response
+          user: response.data.user,
         });
         return { success: true, message: "Login successful!" };
       } else {
-        // Handle cases where status is not 'success' or data/token is missing
-        // Prioritize backend message, then data.message, then a generic message
         const errorMessage =
           response.message ||
           response.data?.message ||
@@ -100,13 +100,15 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = useCallback(async () => {
+    console.log("AuthContext: Performing logout...");
     await AsyncStorage.removeItem("jwtToken");
-    await AsyncStorage.removeItem("user"); // NEW: Remove user data on logout
+    await AsyncStorage.removeItem("user");
     setAuthState({
       token: null,
       isAuthenticated: false,
       user: null,
     });
+    // NO NEED to directly navigate here. App.js will re-render based on authState.isAuthenticated
   }, []);
 
   // Signup function
@@ -114,8 +116,6 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await apiSignup(userData);
-      // Assuming apiSignup returns { success: true } or { status: 'success' }
-      // Adjust this condition based on your actual signup API response structure
       if (response.success || response.status === "success") {
         return {
           success: true,
@@ -144,6 +144,16 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
+
+  // Set the logout function on the imported 'api' instance
+  // This allows the axios interceptor in api.js to call AuthContext's logout
+  useEffect(() => {
+    api.setLogoutHandler(logout);
+    // Cleanup if component unmounts (though for AuthProvider, it rarely does)
+    return () => {
+      api.setLogoutHandler(null);
+    };
+  }, [logout]); // Depend on 'logout' to re-set if it changes (though useCallback should prevent this)
 
   // Run checkAuthStatus on component mount
   useEffect(() => {

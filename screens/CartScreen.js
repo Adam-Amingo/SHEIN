@@ -11,7 +11,8 @@ import { CartContext } from "../context/CartContext";
 import { SwipeListView } from "react-native-swipe-list-view";
 
 const CartScreen = ({ navigation }) => {
-  const { cartItems, removeFromCart } = useContext(CartContext);
+  // *** FIX 1: Change 'removeFromCart' to 'removeItemFromCart' ***
+  const { cartItems, removeItemFromCart } = useContext(CartContext);
 
   const renderItem = (data) => {
     const item = data.item;
@@ -22,7 +23,8 @@ const CartScreen = ({ navigation }) => {
         <Image source={{ uri: item.image }} style={styles.image} />
         <View style={styles.details}>
           <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.info}>Size: {item.size}</Text>
+          {/* *** NOTE: 'item.size' is not coming from backend CartItemResponse *** */}
+          <Text style={styles.info}>Size: {item.size || "N/A"}</Text>
           <Text style={styles.info}>Qty: {item.quantity}</Text>
           <Text style={styles.total}>Total: ${itemTotal.toFixed(2)}</Text>
         </View>
@@ -38,7 +40,9 @@ const CartScreen = ({ navigation }) => {
           if (rowMap[data.index]) {
             rowMap[data.index].closeRow();
           }
-          removeFromCart(data.item.id, data.item.size);
+          // *** FIX 2: Call 'removeItemFromCart' and pass 'data.item.productId' ***
+          // *** Also, removed data.item.size as it's not needed by the backend API ***
+          removeItemFromCart(data.item.productId);
         }}
       >
         <Text style={styles.deleteText}>Delete</Text>
@@ -52,7 +56,9 @@ const CartScreen = ({ navigation }) => {
 
       <SwipeListView
         data={cartItems}
-        keyExtractor={(item) => `${item.id}-${item.size}`}
+        // *** NOTE: keyExtractor should use a truly unique key, like item.id (cartItemId) ***
+        // *** If item.size is not from backend, item.productId alone may not be unique if multiple instances of same product exist ***
+        keyExtractor={(item) => `${item.id}`}
         renderItem={renderItem}
         renderHiddenItem={renderHiddenItem}
         rightOpenValue={-75}
@@ -65,7 +71,8 @@ const CartScreen = ({ navigation }) => {
       <View style={styles.checkoutWrapper}>
         <TouchableOpacity
           onPress={() => navigation.navigate("Checkout")}
-          style={styles.checkoutButton}>
+          style={styles.checkoutButton}
+        >
           <Text style={styles.checkoutText}>Proceed to Checkout</Text>
         </TouchableOpacity>
       </View>
@@ -130,7 +137,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     paddingRight: 20,
-    height: 100
+    height: 100,
   },
   deleteButton: {
     width: 75,
@@ -143,12 +150,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   checkoutWrapper: {
-    // position: "absolute",
-    // bottom: 20,
-    // left: 16,
-    // right: 16,
-    // marginBottom: 20,
-    marginHorizontal: 16
+    marginHorizontal: 16,
   },
   checkoutButton: {
     backgroundColor: "#7f00ff",

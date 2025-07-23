@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ThemeContext = createContext(null);
+export const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
   const [darkTheme, setDarkTheme] = useState(false); // Default to false
