@@ -2,25 +2,25 @@ import React, { useEffect, useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { CartContext } from "../context/CartContext"; // Import CartContext
+// import { CartContext } from "../context/CartContext"; // No longer needed if not clearing cart here
 import { useTheme } from "../ThemeContext"; // Assuming you have a ThemeContext
 
 export default function SuccessScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { clearCart } = useContext(CartContext); // Get clearCart from context
+  // const { clearCart } = useContext(CartContext); // No longer need to get clearCart if not using it
   const { darkTheme } = useTheme();
 
   const { orderId, message } = route.params || {}; // Get orderId and message from route params
 
   useEffect(() => {
-    // Clear the cart when the success screen is displayed
-    // This assumes that reaching this screen means the payment process was successfully initiated.
-    // For robust systems, you might want to clear cart only after a webhook confirms payment.
-    // However, for immediate user feedback, this is often acceptable.
-    clearCart();
-    console.log("Cart cleared on SuccessScreen load.");
-  }, [clearCart]); // Dependency array to ensure it runs only when clearCart function changes (rarely)
+    // --- REMOVED: The clearCart() call has been removed from here. ---
+    // The cart should only be cleared after payment is successfully confirmed by the backend (via webhook).
+    // This screen now solely focuses on informing the user about payment initiation.
+    console.log(
+      "SuccessScreen loaded. Cart clearing logic removed from this screen."
+    );
+  }, []); // Empty dependency array, still runs once on mount, but no cart clearing
 
   const containerStyle = [styles.container, darkTheme && styles.darkContainer];
   const textStyle = [styles.text, darkTheme && styles.darkText];

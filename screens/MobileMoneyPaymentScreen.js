@@ -1,288 +1,379 @@
+// screens/MobileMoneyPaymentScreen.js
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
+  TextInput,
+  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
+  Alert, // For showing user messages
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
-  TouchableOpacity,
-  Linking, // Import Linking for opening URLs
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { initiateMobileMoneyPayment } from "../api";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../ThemeContext";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { initiateMobileMoneyPayment } from "../api"; // Import the new API function
+import { useTheme } from "../ThemeContext"; // Assuming you have a ThemeContext
+import { useAuth } from "../context/AuthContext"; // Assuming you have AuthContext for user email
 
-export default function MobileMoneyPaymentScreen({ route, navigation }) {
-  const { authState } = useAuth();
+const mobileNetworks = [
+  {
+    name: "MTN Mobile Money",
+    value: "MTN",
+    icon: "phone-portrait-outline",
+    color: "#FFCC00",
+  },
+  {
+    name: "Telecel Cash",
+    value: "TELECEL",
+    icon: "phone-portrait-outline",
+    color: "#E60000",
+  }, // Assuming 'TELECEL' as internal name
+  // {
+  //   name: "Vodafone Cash",
+  //   value: "VODAFONE",
+  //   icon: "phone-portrait-outline",
+  //   color: "#C00000",
+  // }, // Keep Vodafone for clarity if Telecel is separate
+  // // Add other networks if supported by Paystack
+];
+
+export default function MobileMoneyPaymentScreen() {
+  const navigation = useNavigation();
+  const route = useRoute();
   const { darkTheme } = useTheme();
+  const { authState } = useAuth(); // Get authenticated user's email
 
-  const {
-    orderId,
-    amount,
-    customerEmail,
-    selectedPaymentMethod,
-    mobileNumber,
-    customerMobileNetwork,
-  } = route.params;
+  // Get order details from route params
+  const { orderId, amount, customerEmail } = route.params;
 
-  const [loading, setLoading] = useState(false);
-  const [paymentStatusMessage, setPaymentStatusMessage] = useState(
-    "Initiating mobile money payment..."
-  );
-  const [showRetry, setShowRetry] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState(null);
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [paymentStatusMessage, setPaymentStatusMessage] = useState("");
+
+  useEffect(() => {
+    // You might want to pre-fill customerEmail if it's available from authState
+    // if (!customerEmail && authState.user && authState.user.email) {
+    //   setCustomerEmail(authState.user.email);
+    // }
+  }, [authState.user, customerEmail]);
 
   const handleInitiatePayment = async () => {
-    setLoading(true);
-    setPaymentStatusMessage("Initiating mobile money payment...");
-    setShowRetry(false); // Reset retry on new attempt
+    if (!selectedNetwork) {
+      Alert.alert("Error", "Please select a mobile money network.");
+      return;
+    }
+    if (!mobileNumber.trim()) {
+      Alert.alert("Error", "Please enter your mobile money number.");
+      return;
+    }
+    if (!orderId || !amount || !customerEmail) {
+      Alert.alert(
+        "Error",
+        "Missing order details. Please go back and try again."
+      );
+      return;
+    }
 
-    const paymentDetails = {
-      orderId: orderId,
-      amount: amount,
-      customerEmail: customerEmail,
-      mobileNumber: mobileNumber,
-      mobileNetwork: customerMobileNetwork, // This is "MTN", "VODAFONE" from frontend
-      paymentMethod: selectedPaymentMethod, // This is "MTN_MOBILE_MONEY", "TELECEL_MONEY"
-    };
-
-    console.log("Initiating payment with details:", paymentDetails);
+    setIsLoading(true);
+    setPaymentStatusMessage("");
 
     try {
+      const paymentDetails = {
+        orderId: orderId,
+        amount: amount,
+        customerEmail: customerEmail,
+        mobileNumber: mobileNumber.trim(),
+        mobileNetwork: selectedNetwork,
+      };
+
+      console.log("Initiating payment with details:", paymentDetails);
+
       const response = await initiateMobileMoneyPayment(paymentDetails);
-      console.log("Payment initiation response:", response);
 
-      if (response.success && response.data) {
-        const paystackStatus = response.data.status;
-        const displayText = response.data.displayText; // Use displayText from response
-        const paystackReference = response.data.reference;
+      if (response.success) {
+        // Use response.displayText if available, otherwise fallback to generic message
+        const userMessage =
+          response.displayText ||
+          response.message ||
+          "Payment initiated successfully. Please approve on your phone.";
+        setPaymentStatusMessage(userMessage);
 
-        if (paystackStatus === "pay_offline") {
-          // For MTN, Airtel/Tigo - customer gets a prompt
-          setPaymentStatusMessage(
-            displayText ||
-              "Please check your phone for a prompt to authorize payment."
-          );
-          Alert.alert(
-            "Payment Initiated",
-            displayText || "Please check your phone for a prompt.",
-            [
-              {
-                text: "OK",
-                onPress: () =>
-                  navigation.replace("SuccessScreen", {
-                    orderId: orderId,
-                    message: displayText,
-                  }),
-              },
-            ]
-          );
-        } else if (paystackStatus === "send_otp") {
-          // For Vodafone - customer needs to dial USSD to generate voucher, then submit OTP
-          // NOTE: This flow requires an additional frontend step to collect the OTP.
-          // For now, we'll just display the message and navigate to success,
-          // but a full implementation would require a new screen/modal for OTP input.
-          setPaymentStatusMessage(
-            displayText ||
-              "Please dial USSD to generate a voucher code, then input the voucher."
-          );
-          Alert.alert(
-            "Action Required",
-            displayText ||
-              "Please dial USSD to generate a voucher code. This app does not currently support collecting the voucher code.",
-            [
-              {
-                text: "OK",
-                onPress: () =>
-                  navigation.replace("SuccessScreen", {
-                    orderId: orderId,
-                    message: displayText + " (Manual OTP submission required)",
-                  }),
-              },
-            ]
-          );
-        } else if (paystackStatus === "success") {
-          // Direct success (less common for mobile money push, but possible)
-          setPaymentStatusMessage(
-            response.message || "Payment completed successfully!"
-          );
-          Alert.alert(
-            "Payment Success",
-            response.message || "Your payment was successful!",
-            [
-              {
-                text: "OK",
-                onPress: () =>
-                  navigation.replace("SuccessScreen", {
-                    orderId: orderId,
-                    message: response.message,
-                  }),
-              },
-            ]
-          );
-        } else if (paystackStatus === "pending") {
-          // Transaction is pending (e.g., PIN not entered on time)
-          setPaymentStatusMessage(
-            displayText ||
-              "Payment is pending. Please complete authorization on your phone within 180 seconds."
-          );
-          Alert.alert(
-            "Payment Pending",
-            displayText || "Please complete authorization on your phone.",
-            [
-              {
-                text: "OK",
-                onPress: () =>
-                  navigation.replace("SuccessScreen", {
-                    orderId: orderId,
-                    message: displayText || "Payment is pending.",
-                  }),
-              },
-            ]
-          );
-        } else {
-          // Unexpected status from Paystack
-          setPaymentStatusMessage(
-            "Payment initiated, but received an unexpected status: " +
-              paystackStatus
-          );
-          setShowRetry(true); // Allow retry
-          Alert.alert(
-            "Payment Status Unclear",
-            "Payment initiated, but the response was unexpected. Please check your order history later."
-          );
-        }
+        Alert.alert("Payment Initiated", userMessage, [
+          {
+            text: "OK",
+            onPress: () =>
+              navigation.navigate("SuccessScreen", {
+                orderId: orderId,
+                message: "Payment initiated. Awaiting confirmation.",
+              }),
+          },
+        ]);
       } else {
-        // Backend returned success: false
         setPaymentStatusMessage(
           response.message || "Payment initiation failed."
         );
-        setShowRetry(true); // Allow retry
-        Alert.alert("Payment Failed", response.message || "Please try again.");
+        Alert.alert(
+          "Payment Failed",
+          response.message || "Could not initiate payment. Please try again."
+        );
       }
     } catch (error) {
-      // Network or unhandled error
-      console.error("Error initiating mobile money payment:", error);
+      console.error("Error in handleInitiatePayment:", error);
       setPaymentStatusMessage(
-        error.message || "Network error. Please try again."
+        "An unexpected error occurred. Please try again."
       );
-      setShowRetry(true); // Allow retry
-      Alert.alert(
-        "Payment Error",
-        error.message || "Failed to connect to payment service."
-      );
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    handleInitiatePayment();
-  }, []); // Run once on component mount
-
   const containerStyle = [styles.container, darkTheme && styles.darkContainer];
   const textStyle = [styles.text, darkTheme && styles.darkText];
-  const messageStyle = [styles.message, darkTheme && styles.darkMessage];
+  const inputStyle = [styles.input, darkTheme && styles.darkInput];
+  const buttonStyle = [styles.button, darkTheme && styles.darkButton];
+  const buttonTextStyle = [
+    styles.buttonText,
+    darkTheme && styles.darkButtonText,
+  ];
+  const networkOptionStyle = (value) => [
+    styles.networkOption,
+    darkTheme && styles.darkNetworkOption,
+    selectedNetwork === value && styles.networkOptionSelected,
+    selectedNetwork === value && darkTheme && styles.darkNetworkOptionSelected,
+  ];
+  const networkOptionTextStyle = (value) => [
+    styles.networkOptionText,
+    darkTheme && styles.darkText,
+    selectedNetwork === value && styles.networkOptionTextSelected,
+  ];
 
   return (
-    <SafeAreaView style={containerStyle}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Confirm Payment</Text>
-        <Text style={textStyle}>Order ID: {orderId}</Text>
-        <Text style={textStyle}>Amount: ₵ {amount.toFixed(2)}</Text>
-        <Text style={textStyle}>Method: {selectedPaymentMethod}</Text>
-        <Text style={textStyle}>Number: {mobileNumber}</Text>
-        <Text style={textStyle}>Network: {customerMobileNetwork}</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView contentContainerStyle={containerStyle}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Icon
+              name="arrow-back"
+              size={24}
+              color={darkTheme ? "#fff" : "#333"}
+            />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, darkTheme && styles.darkText]}>
+            Mobile Money Payment
+          </Text>
+        </View>
 
-        <View style={styles.statusContainer}>
-          {loading ? (
-            <ActivityIndicator size="large" color="#7f00ff" />
-          ) : (
-            <Text style={messageStyle}>{paymentStatusMessage}</Text>
-          )}
+        <View style={styles.content}>
+          <Text style={[styles.amountText, darkTheme && styles.darkText]}>
+            Amount: GHS {parseFloat(amount).toFixed(2)}
+          </Text>
+          <Text style={[styles.label, darkTheme && styles.darkText]}>
+            Select Mobile Network:
+          </Text>
+          <View style={styles.networkOptionsContainer}>
+            {mobileNetworks.map((network) => (
+              <TouchableOpacity
+                key={network.value}
+                style={networkOptionStyle(network.value)}
+                onPress={() => setSelectedNetwork(network.value)}
+              >
+                <Icon
+                  name={network.icon}
+                  size={24}
+                  color={
+                    selectedNetwork === network.value ? "#fff" : network.color
+                  }
+                />
+                <Text style={networkOptionTextStyle(network.value)}>
+                  {network.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-          {showRetry && (
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={handleInitiatePayment}
-              disabled={loading}
+          <Text style={[styles.label, darkTheme && styles.darkText]}>
+            Mobile Money Number:
+          </Text>
+          <TextInput
+            style={inputStyle}
+            placeholder="e.g., 05XXXXXXXX"
+            placeholderTextColor={darkTheme ? "#aaa" : "#888"}
+            keyboardType="phone-pad"
+            value={mobileNumber}
+            onChangeText={setMobileNumber}
+          />
+
+          {paymentStatusMessage ? (
+            <Text
+              style={[
+                styles.statusMessage,
+                {
+                  color: paymentStatusMessage.includes("failed")
+                    ? "red"
+                    : "green",
+                },
+              ]}
             >
-              <Text style={styles.retryButtonText}>Retry Payment</Text>
-            </TouchableOpacity>
-          )}
-
-          {!loading && !showRetry && (
-            <Text style={styles.instructionText}>
-              If you don't receive a prompt, please ensure your mobile number is
-              correct and your network is active for mobile money.
+              {paymentStatusMessage}
             </Text>
-          )}
+          ) : null}
+
+          <TouchableOpacity
+            style={buttonStyle}
+            onPress={handleInitiatePayment}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={buttonTextStyle}>Pay Now</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#f8f8f8",
-    padding: 20,
+    paddingTop: 40,
+    paddingHorizontal: 20,
   },
   darkContainer: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#333",
   },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
+  header: {
+    flexDirection: "row",
     alignItems: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
     marginBottom: 20,
+  },
+  backButton: {
+    padding: 5,
+    marginRight: 10,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
     color: "#333",
   },
-  text: {
+  content: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  amountText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 30,
+  },
+  label: {
     fontSize: 16,
-    marginBottom: 8,
+    fontWeight: "600",
     color: "#555",
+    marginBottom: 10,
   },
   darkText: {
     color: "#eee",
   },
-  statusContainer: {
-    marginTop: 30,
-    alignItems: "center",
-  },
-  message: {
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-    color: "#7f00ff",
+  networkOptionsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginBottom: 20,
+    flexWrap: "wrap", // Allow networks to wrap if many
   },
-  darkMessage: {
-    color: "#9966ff",
-  },
-  retryButton: {
-    backgroundColor: "#FF6347", // Tomato red for retry
+  networkOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
     paddingVertical: 12,
-    paddingHorizontal: 25,
+    paddingHorizontal: 15,
     borderRadius: 10,
-    marginTop: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    minWidth: "45%", // Adjust for two columns
+    marginBottom: 10,
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  retryButtonText: {
-    color: "#fff",
+  darkNetworkOption: {
+    backgroundColor: "#444",
+    borderColor: "#555",
+  },
+  networkOptionSelected: {
+    backgroundColor: "#7f00ff",
+    borderColor: "#7f00ff",
+  },
+  darkNetworkOptionSelected: {
+    backgroundColor: "#6a00cc",
+    borderColor: "#6a00cc",
+  },
+  networkOptionText: {
+    marginLeft: 8,
     fontSize: 16,
     fontWeight: "bold",
+    color: "#555",
   },
-  instructionText: {
-    fontSize: 14,
-    color: "#777",
-    textAlign: "center",
+  networkOptionTextSelected: {
+    color: "#fff",
+  },
+  input: {
+    height: 50,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    color: "#333",
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  darkInput: {
+    backgroundColor: "#444",
+    color: "#fff",
+    borderColor: "#555",
+  },
+  button: {
+    backgroundColor: "#7f00ff",
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 20,
-    lineHeight: 20,
+  },
+  darkButton: {
+    backgroundColor: "#6a00cc",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  darkButtonText: {
+    color: "#fff",
+  },
+  statusMessage: {
+    textAlign: "center",
+    marginTop: 15,
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
