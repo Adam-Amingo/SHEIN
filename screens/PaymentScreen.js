@@ -219,8 +219,7 @@ const PaymentScreen = ({ navigation, route }) => {
     const { order } = route.params;
 
     console.log("Order ID:", order.id);
-    console.log("Total:", order.total);
-    console.log("Items:", order.items);
+
     // Use it to trigger notification, order tracking, etc.
 
 

@@ -20,7 +20,7 @@ export default function SignupScreen({ navigation }) {
     username: "",
     email: "",
     password: ""
-    
+
 
     // In my backend module, there is sex and dob but your original code didnt have it so im not going to implement it
   });
@@ -169,8 +169,9 @@ export default function SignupScreen({ navigation }) {
       <View style={styles.loginButtonWrapper}>
         <Button
           title="Go to Login"
+          color="#7f00ff"
           onPress={() => navigation.navigate("Login")}
-          color="c"
+
         />
       </View>
     </View>

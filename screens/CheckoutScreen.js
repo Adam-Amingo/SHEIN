@@ -1,122 +1,4 @@
 
-
-
-/////////////////////////////////////
-///////////////////////////////////////
-
-// import React, { useContext } from "react";
-// import {
-//     View,
-//     Text,
-//     FlatList,
-//     StyleSheet,
-//     TouchableOpacity,
-//     SafeAreaView,
-//     Animated,
-// } from "react-native";
-// import * as Crypto from 'expo-crypto';
-// import { CartContext } from "../context/CartContext";
-
-// const CheckoutScreen = ({ navigation, route }) => {
-//     const { cartItems } = useContext(CartContext);
-//     const { item, quantity = 1, size = "M" } = route.params || {};
-
-//     const isSingleItemCheckout = !!item;
-
-//     const itemsToRender = isSingleItemCheckout
-//         ? [{ ...item, quantity, size }]
-//         : cartItems;
-
-//     const calculateTotal = () => {
-//         return itemsToRender.reduce(
-//             (acc, item) => acc + item.price * item.quantity,
-//             0
-//         );
-//     };
-
-//     const renderItem = ({ item, index }) => {
-//         const translateY = new Animated.Value(30);
-//         const opacity = new Animated.Value(0);
-
-//         Animated.timing(translateY, {
-//             toValue: 0,
-//             duration: 300,
-//             delay: index * 100,
-//             useNativeDriver: true,
-//         }).start();
-
-//         Animated.timing(opacity, {
-//             toValue: 1,
-//             duration: 500,
-//             delay: index * 200,
-//             useNativeDriver: true,
-//         }).start();
-
-//         return (
-//             <Animated.View
-//                 style={[styles.itemContainer, { transform: [{ translateY }], opacity }]}
-//             >
-//                 <Text style={styles.productName}>{item.name}</Text>
-//                 <Text style={styles.details}>Size: {item.size}</Text>
-//                 <Text style={styles.details}>Qty: {item.quantity}</Text>
-//                 <Text style={styles.itemTotal}>
-//                     ₵ {(item.price * item.quantity).toFixed(2)}
-//                 </Text>
-//             </Animated.View>
-//         );
-//     };
-
-//     return (
-//         <SafeAreaView style={styles.container}>
-//             <FlatList
-//                 data={itemsToRender}
-//                 keyExtractor={(item, index) => `${item.id}-${item.size}-${index}`}
-//                 renderItem={renderItem}
-//                 contentContainerStyle={styles.listContent}
-//                 showsVerticalScrollIndicator={false}
-//             />
-
-//             <View style={styles.checkoutBar}>
-//                 <View style={styles.amountbox}>
-//                     <Text style={styles.totalLabel}>Total:</Text>
-//                     <Text style={styles.totalAmount}>₵ {calculateTotal().toFixed(2)}</Text>
-//                 </View>
-
-//                 {/* <TouchableOpacity
-//                     style={styles.checkoutButton}
-//                     onPress={() =>
-//                         navigation.navigate("PaymentScreen", {
-//                             totalAmount: calculateTotal(),
-//                             items: itemsToRender,
-//                         })
-//                     }
-//                 >
-//                     <Text style={styles.checkoutText}>Proceed to Payment</Text>
-//                 </TouchableOpacity> */}
-
-//                 <TouchableOpacity
-//                     style={styles.checkoutButton}
-//                     onPress={async () => {
-//                         const orderId = await Crypto.digestStringAsync(
-//                             Crypto.CryptoDigestAlgorithm.SHA256,
-//                             Date.now().toString() + Math.random().toString()
-//                         );
-
-//                         navigation.navigate("PaymentScreen", {
-//                             totalAmount: calculateTotal(),
-//                             items: itemsToRender,
-//                             orderId, // pass the order ID here
-//                         });
-//                     }}
-//                 >
-//                     <Text style={styles.checkoutText}>Proceed to Payment</Text>
-//                 </TouchableOpacity>
-
-//             </View>
-//         </SafeAreaView>
-//     );
-// };
-
 import React, { useContext } from "react";
 import {
     View,
@@ -128,8 +10,12 @@ import {
     Animated,
 } from "react-native";
 import { CartContext } from "../context/CartContext";
+import { useTranslation } from "react-i18next";
+
 
 const CheckoutScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
+
     const { cartItems } = useContext(CartContext);
     const { item, quantity = 1, size = "M" } = route.params || {};
 
@@ -179,8 +65,8 @@ const CheckoutScreen = ({ navigation, route }) => {
                 style={[styles.itemContainer, { transform: [{ translateY }], opacity }]}
             >
                 <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.details}>Size: {item.size}</Text>
-                <Text style={styles.details}>Qty: {item.quantity}</Text>
+                <Text style={styles.details}>{t("checkout.size")}: {item.size}</Text>
+                <Text style={styles.details}>{t("checkout.quantity")}:{item.quantity}</Text>
                 <Text style={styles.itemTotal}>
                     ₵ {(item.price * item.quantity).toFixed(2)}
                 </Text>
@@ -200,15 +86,15 @@ const CheckoutScreen = ({ navigation, route }) => {
 
             <View style={styles.checkoutBar}>
                 <View style={styles.amountbox}>
-                    <Text style={styles.totalLabel}>Total:</Text>
-                    <Text style={styles.totalAmount}>₵ {calculateTotal().toFixed(2)}</Text>
+                    <Text style={styles.totalLabel}>{t("checkout.total")}:</Text>
+                    <Text style={styles.totalAmount}>₵ {calculateTotal()}</Text>
                 </View>
 
                 <TouchableOpacity
                     style={styles.checkoutButton}
                     onPress={() => {
                         const generatedOrderId = generateOrderId(); // ✅ Create order ID
-                        navigation.navigate("PaymentScreen", {
+                        navigation.navigate("MobileMoneyPaymentScreen", {
                             order: {
                                 id: generatedOrderId,
                                 items: itemsToRender,
@@ -217,7 +103,7 @@ const CheckoutScreen = ({ navigation, route }) => {
                         });
                     }}
                 >
-                    <Text style={styles.checkoutText}>Proceed to Payment</Text>
+                    <Text style={styles.checkoutText}>{t("checkout.proceed_to_payment")}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

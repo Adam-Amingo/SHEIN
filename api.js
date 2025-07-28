@@ -2,7 +2,7 @@
 // This file contains functions to interact with the backend API for user authentication
 import axios from "axios";
 
-const BASE_URL = "https://d6819c48922d.ngrok-free.app"; // using ngrok provided url address @rycoe
+const BASE_URL = "https://c7eaf16a0db4.ngrok-free.app"; // using ngrok provided url address @rycoe
 // it will refresh if i turn off my computer or if the ngrok session expires
 
 export const signup = async (userData) => {

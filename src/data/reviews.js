@@ -1,27 +1,3 @@
-// const REVIEWS = [
-//     { id: '1', name: 'Nancy D.', rating: 5, comment: 'Beautiful dress! Fit perfectly and material is great.' },
-//     { id: '2', name: 'Willard R.', rating: 4, comment: 'Nice quality, just wish it came in more colors.' },
-//     { id: '3', name: 'Deborah N.', rating: 5, comment: 'Absolutely love it! Will buy again!' },
-//     { id: '4', name: 'Jessica R.', rating: 5, comment: 'Fits perfectly and feels luxurious.' },
-//     { id: '5', name: 'Tina L.', rating: 4, comment: 'Cute but shipping took longer than expected.' },
-//     { id: '6', name: 'Abigail S.', rating: 5, comment: 'My new favorite dress. Highly recommend!' },
-//     { id: '7', name: 'Akosua K.', rating: 4, comment: 'Color was slightly different but still nice.' },
-//     { id: '8', name: 'Kofi B.', rating: 5, comment: 'Perfect gift for my sister!' },
-//     { id: '9', name: 'Daniel A.', rating: 5, comment: 'Stylish and very well made.' },
-//     { id: '10', name: 'Vanessa C.', rating: 4, comment: 'Good value for the price.' },
-//     { id: '11', name: 'Helen W.', rating: 5, comment: 'Wore it to a party — so many compliments!' },
-//     { id: '12', name: 'Kelvin O.', rating: 5, comment: 'This is a must-have in your wardrobe.' },
-//     { id: '13', name: 'Fafa F.', rating: 3, comment: 'Didn’t fit as expected but okay.' },
-//     { id: '14', name: 'Caleb T.', rating: 4, comment: 'Good but expected better packaging.' },
-//     { id: '15', name: 'Jude Z.', rating: 5, comment: 'Absolutely stunning piece.' },
-//     { id: '16', name: 'David M.', rating: 5, comment: 'Elegant and comfortable!' },
-//     { id: '17', name: 'Gloria Q.', rating: 5, comment: 'Top quality. Worth every penny.' },
-//     { id: '18', name: 'Jane Y.', rating: 4, comment: 'Nice, but sleeves were a bit tight.' },
-//     { id: '19', name: 'Ashely D.', rating: 5, comment: 'Loved the detail on this product!' },
-//     { id: '20', name: 'Foster N.', rating: 5, comment: 'The color pops. Would buy again.' },
-// ];
-
-// export default REVIEWS;
 
 
 const REVIEWS = [

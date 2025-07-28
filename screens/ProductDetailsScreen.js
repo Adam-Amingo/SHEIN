@@ -20,6 +20,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import PRODUCTS from '../src/data/products';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
+
 
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -34,6 +36,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
   const [displayedReviews, setDisplayedReviews] = useState([]);
   const [expandedReviews, setExpandedReviews] = useState(false);
   const [loading, setLoading] = useState(true);
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -51,19 +54,22 @@ export default function ProductDetailsScreen({ route, navigation }) {
   }, []);
 
 
-  // const relatedProducts = PRODUCTS.filter(
-  //   (p) => p.subcategory === item.subcategory && p.id !== item.id
-  // );
+
+
+
+  const { t } = useTranslation();
 
   const relatedProducts = [...PRODUCTS]
-    .filter(
-      (p) =>
+    .filter((p) => {
+      return (
         p.category === item.category &&
         Math.abs(p.price - item.price) <= 50 &&
         p.id !== item.id
-    )
-    .sort(() => 0.5 - Math.random()) // shuffle
-    .slice(0, 6); // limit results
+      );
+    })
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 6);
+
 
 
   const handleAddToCart = () => {
@@ -147,7 +153,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
             </View>
 
             {/* Size Selector with Shimmer */}
-            <Text style={styles.sectionLabel}>Select Size</Text>
+            <Text style={styles.sectionLabel}>{t('productDetails.select_size')}</Text>
             {loading ? (
               <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
                 {Array(3).fill(null).map((_, i) => (
@@ -183,7 +189,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
             )}
 
             {/* Quantity Selector with Shimmer */}
-            <Text style={styles.sectionLabel}>Quantity</Text>
+            <Text style={styles.sectionLabel}>{t('productDetails.quantity')}</Text>
             {loading ? (
               <View style={{ flexDirection: 'row', gap: 20, marginBottom: 24 }}>
                 <ShimmerPlaceholder
@@ -214,7 +220,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
             {/* Related Products */}
             {relatedProducts.length > 0 && (
               <View style={{ marginBottom: 32 }}>
-                <Text style={styles.sectionLabel}>Similar Products</Text>
+                <Text style={styles.sectionLabel}>{t('productDetails.similar_products')}</Text>
                 <FlatList
                   data={relatedProducts}
                   keyExtractor={(item) => item.id}
@@ -235,7 +241,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
             )}
 
             {/* Customer Reviews */}
-            <Text style={styles.sectionLabel}>Customer Reviews</Text>
+            <Text style={styles.sectionLabel}>{t('productDetails.customer_reviews')}</Text>
             <FlatList
               data={visibleReviews}
               keyExtractor={(item) => item.id}
@@ -252,7 +258,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
                 }}
                 style={styles.showMoreButton}
               >
-                <Text style={styles.showMoreText}>Show More Reviews</Text>
+                <Text style={styles.showMoreText}>{t('productDetails.show_more_reviews')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -266,7 +272,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.cartButton} onPress={handleAddToCart}>
-          <Text style={styles.cartButtonText}>Add to Cart</Text>
+          <Text style={styles.cartButtonText}>{t('productDetails.add_to_cart')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -279,7 +285,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
             });
           }}
         >
-          <Text style={styles.buyNowText}>Buy Now</Text>
+          <Text style={styles.buyNowText}>{t("productDetails.buy_now")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -386,19 +392,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginHorizontal: 20,
   },
-  // bottomBar: {
-  //   position: 'absolute',
-  //   bottom: 0,
-  //   left: 0,
-  //   right: 0,
-  //   backgroundColor: '#fff',
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  //   paddingHorizontal: 16,
-  //   paddingBottom: 40,
-  //   borderTopWidth: 1,
-  //   borderTopColor: '#eee',
-  // },
+
 
   bottomBar: {
     flexDirection: 'row',
@@ -411,14 +405,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 
-  // addToCartButton: {
-  //   flex: 1,
-  //   backgroundColor: '#7f00ff',
-  //   paddingVertical: 14,
-  //   borderRadius: 12,
-  //   alignItems: 'center',
-  //   marginRight: 12,
-  // },
+
   cartButton: {
     flex: 1,
     backgroundColor: '#7f00ff',
@@ -433,16 +420,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // addToCartText: {
-  //   color: '#fff',
-  //   fontSize: 16,
-  //   fontWeight: '700',
-  // },
-  // wishlistButton: {
-  //   padding: 14,
-  //   borderRadius: 12,
-  //   backgroundColor: '#eee',
-  // },
   wishlistButton: {
     width: 50,
     height: 50,
@@ -561,4 +538,240 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+
+
+/////////////////////////////
+////////////////////////////////
+
+
+
+// import React, { useState, useContext } from 'react';
+// import {
+//   View,
+//   Text,
+//   Image,
+//   FlatList,
+//   TouchableOpacity,
+//   StyleSheet,
+//   ScrollView,
+// } from 'react-native';
+// import { useRoute } from '@react-navigation/native';
+// import CartContext from '../context/CartContext';
+// import WishlistContext from '../context/WishlistContext';
+// import Ionicons from 'react-native-vector-icons/Ionicons';
+// import reviews from '../src/data/reviews';
+// import PRODUCTS from '../src/data/product1';
+// import { useTranslation } from 'react-i18next';
+
+// const ProductDetailsScreen = () => {
+//   const route = useRoute();
+//   const { product } = route.params;
+//   const { addToCart } = useContext(CartContext);
+//   const { toggleWishlist, isInWishlist } = useContext(WishlistContext);
+
+//   const [selectedSize, setSelectedSize] = useState(null);
+//   const [quantity, setQuantity] = useState(1);
+//   const { t } = useTranslation();
+
+//   const handleSizeSelect = (size) => {
+//     setSelectedSize(size);
+//   };
+
+//   const handleAddToCart = () => {
+//     if (selectedSize) {
+//       addToCart({ ...product, selectedSize, quantity });
+//     } else {
+//       alert(t('select_size_first'));
+//     }
+//   };
+  
+
+
+//   const filteredReviews = reviews
+//     .filter((review) => review.productId === product.id)
+//     .slice(0, 5);
+
+//   const relatedProducts = PRODUCTS.filter(
+//     (item) =>
+//       item.subcategory === product.subcategory && item.id !== product.id
+//   );
+
+//   return (
+//     <ScrollView style={styles.container}>
+//       <Image source={{ uri: product.image }} style={styles.productImage} />
+
+//       <View style={styles.detailsContainer}>
+//         <Text style={styles.title}>{product.name}</Text>
+//         <Text style={styles.price}>₵{product.price.toFixed(2)}</Text>
+//         <Text style={styles.rating}>{'⭐️'.repeat(product.rating)}</Text>
+
+//         <Text style={styles.sectionLabel}>{t('select_size')}</Text>
+//         <View style={styles.sizeContainer}>
+//           {['S', 'M', 'L', 'XL'].map((size) => (
+//             <TouchableOpacity
+//               key={size}
+//               style={[
+//                 styles.sizeOption,
+//                 selectedSize === size && styles.selectedSize,
+//               ]}
+//               onPress={() => handleSizeSelect(size)}
+//             >
+//               <Text
+//                 style={[
+//                   styles.sizeText,
+//                   selectedSize === size && styles.selectedSizeText,
+//                 ]}
+//               >
+//                 {size}
+//               </Text>
+//             </TouchableOpacity>
+//           ))}
+//         </View>
+
+//         <Text style={styles.sectionLabel}>{t('quantity')}</Text>
+//         <View style={styles.quantityContainer}>
+//           <TouchableOpacity
+//             onPress={() => setQuantity(Math.max(1, quantity - 1))}
+//           >
+//             <Ionicons name="remove-circle-outline" size={28} color="#7f00ff" />
+//           </TouchableOpacity>
+//           <Text style={styles.quantityText}>{quantity}</Text>
+//           <TouchableOpacity onPress={() => setQuantity(quantity + 1)}>
+//             <Ionicons name="add-circle-outline" size={28} color="#7f00ff" />
+//           </TouchableOpacity>
+//         </View>
+
+//         <View style={styles.buttonContainer}>
+//           <TouchableOpacity
+//             style={styles.cartButton}
+//             onPress={handleAddToCart}
+//           >
+//             <Text style={styles.cartButtonText}>{t('add_to_cart')}</Text>
+//           </TouchableOpacity>
+//           <TouchableOpacity
+//             style={styles.wishlistButton}
+//             onPress={() => toggleWishlist(product)}
+//           >
+//             <Ionicons
+//               name={isInWishlist(product) ? 'heart' : 'heart-outline'}
+//               size={24}
+//               color="#7f00ff"
+//             />
+//           </TouchableOpacity>
+//         </View>
+
+//         <TouchableOpacity style={styles.buyNowButton}>
+//           <Text style={styles.buyNowText}>{t('buy_now')}</Text>
+//         </TouchableOpacity>
+
+//         <Text style={styles.sectionLabel}>{t('customer_reviews')}</Text>
+//         {filteredReviews.map((review, index) => (
+//           <View key={index} style={styles.reviewItem}>
+//             <Text style={styles.reviewer}>{review.reviewer}</Text>
+//             <Text style={styles.reviewText}>{review.text}</Text>
+//           </View>
+//         ))}
+
+//         <Text style={styles.sectionLabel}>{t('similar_products')}</Text>
+//         <FlatList
+//           horizontal
+//           data={relatedProducts}
+//           keyExtractor={(item) => item.id.toString()}
+//           renderItem={({ item }) => (
+//             <View style={styles.relatedProductCard}>
+//               <Image
+//                 source={{ uri: item.image }}
+//                 style={styles.relatedImage}
+//               />
+//               <Text style={styles.relatedName}>{item.name}</Text>
+//               <Text style={styles.relatedPrice}>
+//                 ₵{item.price.toFixed(2)}
+//               </Text>
+//             </View>
+//           )}
+//         />
+//       </View>
+//     </ScrollView>
+//   );
+// };
+
+// export default ProductDetailsScreen;
+
+// const styles = StyleSheet.create({
+//   container: { flex: 1 },
+//   productImage: { width: '100%', height: 350 },
+//   detailsContainer: { padding: 16 },
+//   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 4 },
+//   price: { fontSize: 20, color: '#7f00ff' },
+//   rating: { marginBottom: 12 },
+//   sectionLabel: { fontWeight: '600', fontSize: 16, marginVertical: 8 },
+//   sizeContainer: { flexDirection: 'row', gap: 10 },
+//   sizeOption: {
+//     paddingVertical: 8,
+//     paddingHorizontal: 16,
+//     borderRadius: 20,
+//     borderWidth: 1,
+//     borderColor: '#ccc',
+//   },
+//   selectedSize: {
+//     borderColor: '#7f00ff',
+//     backgroundColor: '#e5d4ff',
+//   },
+//   sizeText: { fontWeight: '500' },
+//   selectedSizeText: { color: '#7f00ff' },
+//   quantityContainer: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     gap: 12,
+//     marginVertical: 8,
+//   },
+//   quantityText: { fontSize: 16, fontWeight: 'bold' },
+//   buttonContainer: {
+//     flexDirection: 'row',
+//     marginTop: 12,
+//     gap: 12,
+//     alignItems: 'center',
+//   },
+//   cartButton: {
+//     flex: 1,
+//     backgroundColor: '#7f00ff',
+//     padding: 12,
+//     borderRadius: 8,
+//     alignItems: 'center',
+//   },
+//   cartButtonText: { color: '#fff', fontWeight: 'bold' },
+//   wishlistButton: {
+//     padding: 10,
+//     borderRadius: 8,
+//     borderWidth: 1,
+//     borderColor: '#7f00ff',
+//   },
+//   buyNowButton: {
+//     marginTop: 16,
+//     padding: 14,
+//     backgroundColor: '#000',
+//     borderRadius: 8,
+//     alignItems: 'center',
+//   },
+//   buyNowText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+//   reviewItem: {
+//     paddingVertical: 8,
+//     borderBottomWidth: 1,
+//     borderBottomColor: '#eee',
+//   },
+//   reviewer: { fontWeight: 'bold' },
+//   reviewText: { color: '#555' },
+//   relatedProductCard: {
+//     width: 120,
+//     marginRight: 12,
+//     padding: 8,
+//     borderWidth: 1,
+//     borderColor: '#eee',
+//     borderRadius: 8,
+//   },
+//   relatedImage: { width: '100%', height: 100, borderRadius: 6 },
+//   relatedName: { fontSize: 14, fontWeight: 'bold' },
+//   relatedPrice: { color: '#7f00ff' },
+// });
 

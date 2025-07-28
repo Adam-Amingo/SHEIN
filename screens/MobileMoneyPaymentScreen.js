@@ -52,7 +52,7 @@ const MobileMoneyPaymentScreen = ({ route, navigation }) => {
             />
 
             <Text style={{ fontSize: 18, marginVertical: 20 }}>
-                Amount: <Text style={{ color: "#7f00ff", fontWeight: "bold" }}>GHS {totalAmount.toFixed(2)}</Text>
+                Amount: <Text style={{ color: "#7f00ff", fontWeight: "bold" }}>GHS {totalAmount}</Text>
             </Text>
 
             <TouchableOpacity style={styles.payButton} onPress={handlePayment} disabled={loading}>

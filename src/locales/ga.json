@@ -1,0 +1,42 @@
+{
+    "onboarding": {
+        "title1": "Tsɔɔ Lɛ Gbɔmɔ",
+        "description1": "Fa tsɔ lɛɛ aŋŋɔɔi lɛ mɔ ko le hewɔ ni kɛ wɛi ni lɛ.",
+        "title2": "Shwɛi Kɛ Ji",
+        "description2": "Shwɛi ni ji yɛ wɔmɔ lɛ ngɛɛ.",
+        "title3": "Kɛji Biɛ Ni Eha",
+        "description3": "Kɛji biɛ ni yɛ nyɛ atsɔŋɔmɔ.",
+        "getStarted": "Bɔ Mli",
+        "skip": "Fɛɛ"
+    },
+    "bottomNav": {
+        "Home": "Shika Fie",
+        "Category": "Nɔyɔ Nɔ",
+        "Trends": "Wɔmɔi",
+        "Cart": "Gboo",
+        "Me": "Mi"
+    },
+    "productDetails": {
+        "quantity": "Sane",
+        "similar_products": "Tɛɛ ni yɛ ekome",
+        "customer_reviews": "Amɛi ni wɔɔ kpashimɔ",
+        "show_more_reviews": "Kpɔ ɔkpɔkpɔ lɛkɛ he",
+        "add_to_cart": "Tɔ nɛ dɔ dzi",
+        "buy_now": "Tɔ hewalɛ",
+        "select_size": "Yi gbɔi"
+    },
+    "cart": {
+        "your_cart": "Wɔɔmɔ Nɔ",
+        "size": "Kɛji",
+        "quantity": "Nɔyaa",
+        "total": "Kɛ loo",
+        "delete": "Yɛi",
+        "proceed_to_checkout": "Kɛɔ Tε Checkout"
+    },
+    "checkout": {
+        "quantity": "Kɛ nɔ",
+        "size": "Shikpon",
+        "total": "Tɔfeemɔ:",
+        "proceed_to_payment": "Fa kɛ yitso"
+    }
+}

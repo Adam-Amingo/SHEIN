@@ -1,0 +1,42 @@
+{
+    "onboarding": {
+        "title1": "Yina Kpi Nyaŋ",
+        "description1": "Yina kpema nyaŋ ka yina nyɛ kpema tiya yɛli.",
+        "title2": "Zaa Nying kpema",
+        "description2": "Ka zaafɔli yɛ kpema kɔ yuli.",
+        "title3": "Ka Baali Kpuli",
+        "description3": "Ka baali kpuli ni baŋa yɛli.",
+        "getStarted": "Bɛ Paɣa",
+        "skip": "Suɣ"
+    },
+    "bottomNav": {
+        "Home": "Dufɔ",
+        "Category": "Dɔwɔnu",
+        "Trends": "Nunya wòle",
+        "Cart": "Agbalẽ",
+        "Me": "Metsɔ"
+    },
+    "productDetails": {
+        "quantity": "Xoxo me",
+        "similar_products": "Nudɔwɔwɔ si le ɖokui",
+        "customer_reviews": "Nuɖɔlaɖuɖuwo ƒe amenuveve",
+        "show_more_reviews": "Na amenuveve bubu ŋlɔ",
+        "add_to_cart": "Tso dzi la dzi",
+        "buy_now": "Tɔ se ɖe eme",
+        "select_size": "Yi vɔsa"
+    },
+    "cart": {
+        "your_cart": "Wo ƒe Dzidzɔ Nɔ",
+        "size": "ɖeɖe",
+        "quantity": "Dzigbɔ",
+        "total": "Gbɔgbɔ",
+        "delete": "Tutu",
+        "proceed_to_checkout": "Yi ɖe ƒe Tɔtrɔtɔ"
+    },
+    "checkout": {
+        "quantity": "Numɛ",
+        "size": "ƒomevi",
+        "total": "Tɔtrɔ:",
+        "proceed_to_payment": "Dɔ na ŋuɖoɖo"
+    }
+}

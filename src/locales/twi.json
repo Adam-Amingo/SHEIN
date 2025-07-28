@@ -1,0 +1,36 @@
+{
+    "onboarding": {
+        "title1": "Hu Nsɛnkanee Foforɔ",
+        "description1": "Tɔ nsɛnkanee a ɛwɔ hɔ foforɔ ne nneɛma a ɛho yɛ fɛ.",
+        "title2": "Ntɛm Ntɛm Nsoma",
+        "description2": "Fa wʼahyɛde no kɔ wo nkyɛn ntɛm na ɛyɛ nokware.",
+        "title3": "Mmere Ntɔkwa Nni Ho",
+        "description3": "Tɔkwa nni ho na yɛboa wo ntɛm.",
+        "getStarted": "Fiase",
+        "skip": "Pere"
+    },
+    "bottomNav": {
+        "Home": "Fie",
+        "Category": "Nkyerɛmu",
+        "Trends": "Ntɛmntɛm",
+        "Cart": "Adaka",
+        "Me": "Me"
+    },
+    "productDetails": {
+        "quantity": "dodowɔ",
+        "similar_products": "nkutoɔ a ɛte sɛ no",
+        "customer_reviews": "adaafo adwenkyerɛ",
+        "show_more_reviews": "kyerɛ nsɛm pii",
+        "add_to_cart": "faka adaka mu",
+        "buy_now": "tɔ seisei",
+        "select_size": "pɛ ne tenten"
+    },
+    "cart": {
+        "your_cart": "Wo Nsa So Nwoma",
+        "size": "Nɔma Kɛseɛ",
+        "quantity": "Dodow",
+        "total": "Nyinaa",
+        "delete": "Pepa",
+        "proceed_to_checkout": "Kɔ Tua Ka No"
+    }
+}
